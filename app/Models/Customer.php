@@ -357,5 +357,46 @@ class Customer extends Authenticatable
         return $str; // Devuelve un color predeterminado si no hay estado
     }
 
+    /**
+     * Devuelve el número de teléfono ajustado, asegurando consistencia en el prefijo.
+     *
+     * @return string El número de teléfono ajustado con prefijo internacional, si es necesario.
+     */
+    public function getPhoneWP()
+    {
+        $phone = $this->phone; // Asume que 'phone' es el campo principal.
+
+        if (empty($phone)) {
+            // Si 'phone' está vacío, intenta con 'phone2'.
+            $phone = $this->phone2 ?? '';
+        }
+
+        if (empty($phone)) {
+            return ''; // Retorna una cadena vacía si ambos campos están vacíos.
+        }
+
+        // Limpia el número de teléfono de caracteres no numéricos, excepto el '+' inicial.
+        $cleanPhone = preg_replace('/[^\d+]/', '', $phone);
+
+        // Si el número tiene 12 dígitos y comienza con '57', retorna el número sin el '+'.
+        if (preg_match('/^57\d{10}$/', $cleanPhone)) {
+            return $cleanPhone;
+        }
+
+        // Si el número incluye el '+', lo remueve.
+        if (substr($cleanPhone, 0, 1) === '+') {
+            return substr($cleanPhone, 1);
+        }
+
+        // Para números con 10 dígitos, asume que son colombianos y añade '57'.
+        if (strlen($cleanPhone) == 10) {
+            return '57' . $cleanPhone;
+        }
+
+        // Para cualquier otro caso, retorna el número sin modificaciones.
+        return $cleanPhone;
+    
+    }
+
 
 }

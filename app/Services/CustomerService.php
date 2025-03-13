@@ -106,6 +106,7 @@ class CustomerService {
         }
 
         $query->action = "customers/phase/" . $stage_id;
+        $query->phase_id = $stage_id;
         return $query;
     }
 

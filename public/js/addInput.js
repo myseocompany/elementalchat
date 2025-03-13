@@ -20,7 +20,7 @@ function updateMessage(cid, id, value){
     var name = mensaje;
     $.ajax({
         type:'POST',
-        url:protocol+"//crmquirky.com.co/campaigns/message/"+id+"/update",
+        url:protocol+"//paratupiel.quirky.com.co/campaigns/message/"+id+"/update",
         data:{cid:cid,id:id, name:name},
         success:function(data){
             showMessage(data.mensaje);
@@ -35,7 +35,7 @@ function deleteMessage(id){
     var id = id;
     $.ajax({
         type:'POST',
-        url:protocol+"//crmquirky.com.co/campaigns/message/"+id+"/delete",
+        url:protocol+"//paratupiel.quirky.com.co/campaigns/message/"+id+"/delete",
         data:{},
         success:function(data){
             showMessage(data.mensaje);
@@ -64,7 +64,7 @@ $("#submit").click(function(e){
 
     $.ajax({
         type:'POST',
-        url:protocol+"//crmquirky.com.co/campaigns",
+        url:protocol+"//paratupiel.quirky.com.co/campaigns",
         data:{name:name},
         success:function(data){
             showMessage(data.mensaje);
@@ -81,7 +81,7 @@ $("#submitAdd").click(function(e){
     var audience = $("input[name=addCampaignId]").val();
     $.ajax({
         type:'POST',
-        url:protocol+"//crmquirky.com.co/campaigns/message/store",
+        url:protocol+"//paratupiel.quirky.com.co/campaigns/message/store",
         data:{name:name, cid:audience},
         success:function(data){
             showMessage(data.mensaje);
@@ -98,7 +98,7 @@ $("#submitEdit").click(function(e){
     var campaign = $("input[name=editCampaignId]").val();
     $.ajax({
         type:'GET',
-        url:protocol+"//crmquirky.com.co/campaigns/"+campaign+"/update",
+        url:protocol+"//paratupiel.quirky.com.co/campaigns/"+campaign+"/update",
         data:{name:name, cid:campaign},
         success:function(data){
             showMessage(data.mensaje);
