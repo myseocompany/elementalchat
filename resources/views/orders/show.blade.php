@@ -354,7 +354,7 @@ function clearCalculatingMessage() {
             <th class="text-center">Valor</th>
             <th class="text-center">Descuento</th>
             <th class="text-center">Total</th>
-			<th></th>
+			<th class="text-center"></th>
         </tr>
     </thead>
 	<form action="/orders/{{$model->id}}/updateProducts" method="POST" class="form-group">
@@ -372,23 +372,32 @@ function clearCalculatingMessage() {
 					<td class="text-center">{{$item->quantity}}</td>
                     
 					<td class="text-center ">
-					@if($item->sale_type_id==1 )  <!-- es formula -->
-						@if($model->referal_user){{$model->referal_user->name}}
+						@if($item->sale_type_id==1 )  <!-- es formula -->
+							@if($model->referal_user){{$model->referal_user->name}}
+							@else
+								Sin dermatologo
+							@endif
 						@else
-							Sin dermatologo
+						@if($item->user){{$item->user->name}}@endif
 						@endif
-					@else
-					@if($item->user){{$item->user->name}}@endif
-					@endif
-					
-				</td>
-				<td class="text-center ">
-					@if($item->saleType){{$item->saleType->name}}@endif
-				</td>
+					</td>
+
+					<td class="text-center ">
+						@if($item->saleType)
+							{{$item->saleType->name}}
+						@endif
+					</td>
 				
+					<td class="text-center ">
+						@if(isset($item->product))
+                            {{$item->product->price}}
+                        @endif
+					</td>
+
                     <td class="text-center">{{$item->discount}}%</td>
-                    <td class="text-center">$ {{number_format($item->total, 0)}}</td>
-					<td>
+					
+                    <td class="text-center">${{number_format($item->total, 0)}}</td>
+					<td class="text-center ">
 						<input value="-" data-toggle="modal" data-target="#destroy_{{$item->id}}" class="btn btn-primary btn-sm" size="1">
 						<div class="modal" id="destroy_{{$item->id}}">
 							<div class="modal-dialog">

@@ -26,4 +26,9 @@ class OrderProduct extends Model{
     function order(){
     	return $this->belongsTo('App\Models\Order');
     }
+    public function saleType()
+    {
+        return $this->belongsTo(SaleType::class, 'sale_type_id');
+    }
+
 }

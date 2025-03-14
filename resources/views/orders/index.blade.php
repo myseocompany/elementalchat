@@ -66,9 +66,16 @@
 
 
 @php
-  if(isset($item->payment_id) && ($item->payment_id != ""))
-  $total_payments[$item->payment_id] += $item->getTotal();
+  if(isset($item->payment) && $item->payment) {
+      $paymentId = $item->payment->id;
+      // Inicializar si es necesario
+      if(!isset($total_payments[$paymentId])){
+          $total_payments[$paymentId] = 0;
+      }
+      $total_payments[$paymentId] += $item->getTotal();
+  }
 @endphp
+
 @endforeach
 @foreach($payments as $item)
   

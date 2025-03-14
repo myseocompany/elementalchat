@@ -5,7 +5,7 @@
 <h2>Archivos Subidos</h2>
 
 @php
-    $files = \App\OrderFile::getActiveFiles($order_id);
+    $files = \App\Models\OrderFile::getActiveFiles($order_id);
 @endphp
 
 @if($files->isEmpty())

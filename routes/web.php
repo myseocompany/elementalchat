@@ -69,7 +69,7 @@ Route::middleware('auth')->prefix('customers')->group(function () {
     Route::get('/ajax/update_user', [CustomerController::class, 'updateAjax']);
     Route::get('/logistica', [CustomerController::class, 'newIndex']);
     Route::get('/{customer}/action/updateAjax', [CustomerController::class, 'updateAjaxStatus']);
-    Route::get('/phase/{pid}', [CustomerController::class, 'customers']);
+    Route::get('/phase/{pid}', [CustomerController::class, 'getcustomers']);
     Route::get('/{pid}', [CustomerController::class, 'dragleads']);
 });
 

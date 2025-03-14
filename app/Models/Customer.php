@@ -398,5 +398,15 @@ class Customer extends Authenticatable
     
     }
 
+    public function getGenderNameAttribute()
+        {
+            $genders = [
+                'F' => 'Femenino',
+                'M' => 'Masculino',
+                'U' => 'Desconocido'
+            ];
+    
+            return $genders[$this->gender] ?? 'Desconocido';
+        }
 
 }

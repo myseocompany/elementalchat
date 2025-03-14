@@ -1,45 +1,46 @@
 <?php
-//*****  mqe
-//*****  ultimo cambio 2014_11_04
-
+#PTP
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use DB;
 use Mail;
-use File;
-use Auth;
-use Carbon;
+
 use App\Models\Customer;
 use App\Models\CustomerStatus;
 use App\Models\CustomerStatusPhase;
 use App\Models\User;
 use App\Models\CustomerSource;
 use App\Models\CustomerHistory;
-use App\Models\CustomerFile;
+// use App\Account;
+// use App\EmployeeStatus;
+// use App\Mail;
 use App\Models\EmailBrochure;
 use App\Models\Action;
+use App\Models\Project;
+use App\Models\Campaign;
+use App\Models\FindByPhone;
+use App\Models\RfmGroup;
+use App\Models\CustomerPoint;
+use App\Models\CustomerUnsubscribe;
 use App\Models\Email;
 use App\Models\ActionType;
-use App\Models\Product;
-use App\Models\CustomerMeta;
-use App\Models\CustomerMetaData;
+use Auth;
+use Carbon;
+use App\Models\SendWithData;
+use App\Models\CustomerMetadata;
+use App\Models\CustomerMetadataSemantic;
 use App\Models\Audience;
 use App\Models\AudienceCustomer;
-use App\Models\Reference;
-use App\Models\RdStation;
-use App\Models\Campaign;
-use App\Models\CampaignMessage;
-
-use App\Models\Log;
-use App\Models\Country;
 use App\Services\CustomerService;
 
 class CustomerController extends Controller
 {
+
     protected $attributes = ['status_name'];
+
     protected $appends = ['status_name'];
+
     protected $status_name;
     protected $customerService;
 
@@ -47,428 +48,257 @@ class CustomerController extends Controller
         $this->customerService = $customerService;
     }
 
+    public function indexJson(Request $request)
+    {
+        return Customer::all();
+    }
+
     public function index(Request $request)
     {
-        return $this->customers(1, $request);
+
+        return $this->getCustomers($request);
     }
+
     public function indexPhase($pid, Request $request)
     {
-        return $this->customers($pid, $request);
+
+
+        $users = $this->getUsers();
+        $customer_options = CustomerStatus::where('stage_id', $pid)
+            ->orderBy("weight", "ASC")
+            ->get();
+        $statuses = $this->getStatuses($request, $pid);
+        $allStatuses = $this->getAllStatusID();
+        $customersGroup = $this->customerService->filterCustomers($request, $allStatuses, $pid, true, 5);
+        
+        //$customersGroup = $this->countFilterCustomers($request, $allStatuses);
+
+        
+        $projects = Project::all();
+        $pending_actions = $this->getPendingActions();
+        $phase = CustomerStatusPhase::find($pid);
+        $audiences = Audience::all();
+
+        $rfm_groups = RfmGroup::all();
+
+
+        //$model = $this->getModel($request, $statuses, $pid, 50);
+        $model = $this->customerService->filterCustomers($request, $statuses, $pid, false, 5);
+        
+        
+        $sources = CustomerSource::all();
+
+
+        return view('customers.index', compact('model', 'rfm_groups', 'request', 'customer_options', 'customersGroup', 'users', 'sources', 'projects', 'pending_actions', 'phase', 'audiences'));
     }
+
     public function getPendingActions()
     {
         $model = Action::whereNotNull('due_date')
             ->whereNull('delivery_date')
-            ->where('creator_user_id', "=", Auth::id())
+            //->where('creator_user_id', "=", Auth::id())
             ->get();
-        return $model;
-    }
-    public function getInterestOptions(Request $request)
-    {
-        $model = DB::table('customers')
-            ->select(DB::raw('distinct scoring_interest'))
-            ->where(
-                // Búsqueda por...
-                function ($query) use ($request) {
-                    if (isset($request->from_date) && ($request->from_date != null)) {
-                        if (isset($request->created_updated)  && ($request->created_updated == "updated"))
-                            $query = $query->whereBetween('customers.updated_at', array($request->from_date, $request->to_date));
-                        if (isset($request->created_updated)  && ($request->created_updated == "created"))
-                            $query = $query->whereBetween('customers.created_at', array($request->from_date, $request->to_date));
-                    }
-                    /*
-                $date_at = $request->created_updated === "updated" ? 'customers.updated_at' : 'customers.created_at';
-                                if(isset($request->from_date) && $request->from_date != "") {
-                    $query->whereBetween($date_at, $dates);
-                }
-                */
-                    if (isset($request->product_id)  && ($request->product_id != null)) {
-                        if ($request->product_id == 1)
-                            $query = $query->whereIn('customers.product_id', array(1, 6, 7, 8, 9, 10, 11));
-                        else
-                            $query = $query->where('customers.product_id', $request->product_id);
-                    }
-                    if (isset($request->user_id)  && ($request->user_id != null))
-                        $query = $query->where('customers.user_id', $request->user_id);
-                    if (isset($request->source_id)  && ($request->source_id != null))
-                        $query = $query->where('customers.source_id', $request->source_id);
-                    if (isset($request->status_id)  && ($request->status_id != null))
-                        $query = $query->where('customers.status_id', $request->status_id);
-                    if (isset($request->scoring_interest)  && ($request->scoring_interest != null))
-                        $query->where('customers.scoring_interest', $request->scoring_interest);
-                    if (isset($request->scoring_profile)  && ($request->scoring_profile != null))
-                        $query->where('customers.scoring_profile', $request->scoring_profile);
-                    if (isset($request->search)) {
-                        $query = $query->where(
-                            function ($innerQuery) use ($request) {
-                                $innerQuery->orwhere('customers.name', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.email',   "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.document', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.position', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.business', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.phone',   "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.phone2',   "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.notes',   "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.city',    "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.country', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.bought_products', "like", "%" . $request->search . "%");
-                                //$innerQuery->orwhere('customers.status_temp',"like", "%".$request->search."%");
-                                $innerQuery->orwhere('customers.contact_name', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.contact_phone2', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.contact_email', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.contact_position', "like", "%" . $request->search . "%");
-                            }
-                        );
-                    }
-                }
-            )
-            ->orderby('scoring_interest', 'ASC')
-            ->whereNotNull('scoring_interest')
-            ->get();
-        return $model;
-    }
-    public function getProfileOptions(Request $request)
-    {
-        $model = Customer::select(DB::raw('distinct scoring_profile'))
-            ->where(
-                // Búsqueda por...
-                function ($query) use ($request) {
-                    if (isset($request->from_date) && ($request->from_date != null)) {
-                        if (isset($request->created_updated)  && ($request->created_updated == "updated"))
-                            $query = $query->whereBetween('customers.updated_at', array($request->from_date, $request->to_date));
-                        if (isset($request->created_updated)  && ($request->created_updated == "created"))
-                            $query = $query->whereBetween('customers.created_at', array($request->from_date, $request->to_date));
-                    }
-                    if (isset($request->product_id)  && ($request->product_id != null)) {
-                        if ($request->product_id == 1)
-                            $query = $query->whereIn('customers.product_id', array(1, 6, 7, 8, 9, 10, 11));
-                        else
-                            $query = $query->where('customers.product_id', $request->product_id);
-                    }
-                    if (isset($request->user_id)  && ($request->user_id != null))
-                        $query = $query->where('customers.user_id', $request->user_id);
-                    if (isset($request->source_id)  && ($request->source_id != null))
-                        $query = $query->where('customers.source_id', $request->source_id);
-                    if (isset($request->status_id)  && ($request->status_id != null))
-                        $query = $query->where('customers.status_id', $request->status_id);
-                    if (isset($request->scoring_interest)  && ($request->scoring_interest != null))
-                        $query->where('customers.scoring_interest', $request->scoring_interest);
-                    if (isset($request->scoring_profile)  && ($request->scoring_profile != null))
-                        $query->where('customers.scoring_profile', $request->scoring_profile);
-                    if (isset($request->search)) {
-                        $query = $query->where(
-                            function ($innerQuery) use ($request) {
-                                $innerQuery->orwhere('customers.name', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.email',   "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.document', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.position', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.business', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.phone',   "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.phone2',   "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.notes',   "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.city',    "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.country', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.bought_products', "like", "%" . $request->search . "%");
-                                //$innerQuery->orwhere('customers.status_temp',"like", "%".$request->search."%");
-                                $innerQuery->orwhere('customers.contact_name', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.contact_phone2', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.contact_email', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.contact_position', "like", "%" . $request->search . "%");
-                            }
-                        );
-                    }
-                }
-            )
-            ->orderby('scoring_profile', 'desc')
-            ->whereNotNull('scoring_profile')
-            ->get();
+        //dd($model);
         return $model;
     }
 
-    public function getProfileOptionsOrder()
+    public function getCustomers(Request $request)
     {
-        $model = Customer::select(DB::raw('distinct scoring_profile'))
-            ->orderby('scoring_profile', 'asc')
-            ->whereNotNull('scoring_profile')
-            ->get();
-        return $model;
-    }
-    /*
-    public function customers(Request $request) {
         $users = $this->getUsers();
         $customer_options = CustomerStatus::all();
         $statuses = $this->getStatuses($request, 1);
-        $model= $this->getModel($request, $statuses, 'customers');
-        //$customersGroup = $this->customerService->countFilterCustomers($request, $statuses, $pid);
-        $customersGroup = null;
-        $sources = CustomerSource::all();
-        $pending_actions = $this->getPendingActions();
-        $products = Product::all();
-        $scoring_interest = $this->getInterestOptions($request);
-        $scoring_profile = $this->getProfileOptions($request);
-        $audiences = Audience::all();
-        return view('customers.index', compact('model', 'request','customer_options','customersGroup', 'query','users', 'sources', 'pending_actions', 'products', 'statuses', 'scoring_interest', 'scoring_profile', 'audiences'));
-    }*/
-    /*  Esta función debe retornar todos los estados de la fase y previo los estados 
-        que componen los demás estados
-    */
-
-
-    public function customers($pid, Request $request)
-    {
-        $menu = $this->customerService->getUserMenu(Auth::user(1));
-
-        session(['stage_id' => $pid]);
-        $users = $this->getUsers();
-
-        $customer_options = $this->customerService->getCustomerWithParent($pid);
-
-        $statuses = $this->getStatuses($request, $pid);
-        //$statuses = CustomerStatus::all();
-        $model = $this->customerService->filterCustomers($request, $statuses, $pid, false, 5);
-        //$model = $this->customerService->getModelPhase($request, $statuses, $pid);
-
+        $phase_id = 0;
+        //$model = $this->getModel($request, $statuses, $phase_id, 50);
+        $model = $this->customerService->filterCustomers($request, $statuses, $phase_id, false, 5);
         
+        $customersGroup =  $this->customerService->filterCustomers($request, $statuses, $phase_id, true, 5);
+        $projects = Project::all();
 
-        //$customersGroup = $this->customerService->countFilterCustomers($request, $statuses, $pid);
-        $customersGroup = $this->customerService->filterCustomers($request, $statuses, $pid, true);
-        
+        $sources = CustomerSource::orderby('name')->get();
+
         $pending_actions = $this->getPendingActions();
-        $phase = CustomerStatusPhase::find($pid);
-        $sources = CustomerSource::all();
-        $products = Product::all();
-        $scoring_interest = $this->getInterestOptions($request);
-        $scoring_profile = $this->getProfileOptions($request);
-        $inquiry_products = Product::all();
-        $customer = null;
-        $id = 0;
-        if ($model && isset($model[0])) {
-            $customer = $model[0];
-            $id = $customer->id;
-        }
-        if (isset($request->customer_id)) {
-            $customer = Customer::find($request->customer_id);
-            $id = $request->customer_id;
-        }
-        //dd($model->scoring_profile);
-        $actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
-        $action_options = ActionType::orderby('weigth')->get();
-        $histories = CustomerHistory::where('customer_id', '=', $id)->get();
-        $email_options = Email::where('type_id', '=', 1)->where('active', '=', '1')->get();
-        $statuses_options = CustomerStatus::where('status_id', 1)
-            ->where('stage_id', $pid)
-            ->orderBy("weight", "ASC")
+
+
+        return view('customers.index', compact('model', 'request', 'customer_options', 'customersGroup', 'users', 'sources', 'projects', 'pending_actions'));
+    }
+
+
+
+    // public function excel(Request $request)
+    // {
+    //     $users = $this->getUsers();
+    //     $customer_options = CustomerStatus::all();
+    //     $statuses = $this->getStatuses($request, 1);
+
+    //     $model = $this->getModel($request, $statuses, 1, 500000);
+
+    //     $customersGroup = $this->countFilterCustomers($request, $statuses);
+
+    //     $sources = CustomerSource::all();
+
+    //     return view('customers.excel', compact('model', 'request', 'customer_options', 'customersGroup', 'users', 'sources'));
+    // }
+
+    public function excel(Request $request)
+    {
+        $statuses = $this->getStatuses($request, 1);
+        $model = $this->getModel($request, $statuses, 1, 500000);
+
+        $unsubscribedPhoneNumbers = CustomerUnsubscribe::pluck('phone')->toArray();
+
+        // Filtra los clientes que no están en la lista de desuscripción
+
+        $filteredModel = $model->filter(function ($customer) use ($unsubscribedPhoneNumbers) {
+            return !in_array($customer->phone_wp, $unsubscribedPhoneNumbers);
+        });
+
+        return view('customers.excel', ['model' => $filteredModel]);
+    }
+
+
+    public function whatsapp(Request $request)
+    {
+        /*
+        $model = Customer::leftJoin('customer_unsubscribes', 'customers.phone_wp', 'customer_unsubscribes.phone')
+            ->whereRaw("LENGTH(phone_wp)>=10")
+
+            ->whereNull("customer_unsubscribes.phone")
+            ->orderBy("net_total", "DESC")
+            ->distinct()
             ->get();
-        //$country_options = Country::leftJoin("customers", "customers.country", "countries.iso2")->get();
-        $country_options =  Country::select(DB::raw("DISTINCT(customers.country)"))
-            ->leftJoin("customers", "customers.country", "countries.iso2")
-            ->orderBy("customers.country", "ASC")
+        */
+        $model = Customer::whereNotNull('phone_wp')
+            ->whereRaw("LENGTH(phone_wp) >= 10")
+            ->whereNotIn('phone_wp', function ($query) {
+                $query->select('phone')
+                    ->from('customer_unsubscribes');
+            })
+            ->orderBy('net_total', 'desc')
             ->get();
-        //dd($country_options);
-        $actual = true;
-        $today = Carbon\Carbon::now();
-        $audiences = Audience::all();
-        $messages = CampaignMessage::where('campaign_id', 11)->get();
-        $references = null;
-        if ($customer != null) {
-            $references = Reference::where('customer_id', '=', $customer->id)->orderby("created_at", "DESC")->get();
-        }
-        return view('customers.index', compact('country_options', 'inquiry_products', 'model', 'request',   'messages', 'customer_options', 'customersGroup', 'users', 'sources', 'pending_actions', 'products', 'statuses', 'scoring_interest', 'scoring_profile', 'customer', 'histories', 'actions', 'action_options', 'email_options', 'statuses_options', 'actual', 'today', 'audiences', 'references', 'phase', 'menu'));
+
+
+        return view('customers.whatsapp', compact('model'));
+    }
+
+    public function daily_birthday2(Request $request)
+    {
+
+        $actualMonth = Carbon\Carbon::now()->format('m');
+        $actualDay = Carbon\Carbon::now()->format('d');
+
+        $model = Customer::leftJoin('customer_unsubscribes', 'customers.phone_wp', 'customer_unsubscribes.phone')
+            ->whereMonth('birthday', $actualMonth)
+            ->whereDay('birthday', $actualDay)
+            ->whereRaw("LENGTH(phone_wp)=10")
+            ->whereNull("customer_unsubscribes.phone")
+            ->distinct()
+            ->get();
+
+        return view('customers.whatsapp', compact('model'));
     }
 
 
-    public function customersByStage($sid, Request $request)
+    public function daily_birthday(Request $request)
     {
-        $menu = $this->customerService->getUserMenu(Auth::user(1));
-        session(['stage_id' => $sid]);
-        $users = $this->getUsers();
-        $customer_options = $this->customerService->getCustomerWithParent($sid);
-        $statuses = $this->getStatuses($request, $sid);
-        //$statuses = CustomerStatus::all();
-        $model = $this->customerService->getModelPhase($request, $statuses, $sid);
-        $customersGroup = $this->customerService->countFilterCustomers($request, $statuses, $sid);
-        $pending_actions = $this->getPendingActions();
-        $phase = CustomerStatusPhase::find($sid);
-        $sources = CustomerSource::all();
-        $products = Product::all();
-        $scoring_interest = $this->getInterestOptions($request);
-        $scoring_profile = $this->getProfileOptions($request);
-        $customer = null;
-        $id = 0;
-        if ($model && isset($model[0])) {
-            //dd($model);
-            $customer = $model[0];
-            $id = $customer->id;
+        $from_date_carbon = null;
+        $to_date_carbon = null;
+        $actualMonth = null;
+        $actualDay = null;
+
+        // Verificamos si el request incluye las fechas 'from_date' y 'to_date'
+        if (!empty($request->from_date) && !empty($request->to_date)) {
+            list($from_date, $to_date) = $this->getDates($request);
+
+            // Ya que getDates devuelve las fechas con las horas al inicio/final del día, no es necesario agregar la hora nuevamente
+            $from_date_carbon = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $from_date);
+            $to_date_carbon = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $to_date);
+        } else {
+            // Definimos el mes y día actual para la búsqueda predeterminada
+            $actualMonth = Carbon\Carbon::now()->format('m');
+            $actualDay = Carbon\Carbon::now()->format('d');
         }
-        if (isset($request->customer_id)) {
-            $customer = Customer::find($request->customer_id);
-            $id = $request->customer_id;
-        }
-        //dd($model->scoring_profile);
-        $actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
-        $action_options = ActionType::orderby('weigth')->get();
-        $histories = CustomerHistory::where('customer_id', '=', $id)->get();
-        $email_options = Email::where('type_id', '=', 1)->where('active', '=', '1')->get();
-        $statuses_options = CustomerStatus::where('stage_id', $sid)->orderBy("weight", "ASC")->get();
-        $actual = true;
-        $today = Carbon\Carbon::now();
-        $audiences = Audience::all();
-        $messages = CampaignMessage::where('campaign_id', 11)->get();
-        $references = null;
-        if ($customer != null) {
-            $references = Reference::where('customer_id', '=', $customer->id)->orderby("created_at", "DESC")->get();
-        }
-        return view('customers.index', compact('model', 'request',   'messages', 'customer_options', 'customersGroup', 'users', 'sources', 'pending_actions', 'products', 'statuses', 'scoring_interest', 'scoring_profile', 'customer', 'histories', 'actions', 'action_options', 'email_options', 'statuses_options', 'actual', 'today', 'audiences', 'references', 'phase', 'menu'));
-    }
-    public function dragleads(Request $request)
-    {
-        $pid =  substr($request->path(), -1);
-        $menu = $this->customerService->getUserMenu(Auth::user(1));
-        session(['stage_id' => $pid]);
-        $statuses = $this->getStatuses($request, $pid);
-        $model = $this->customerService->getModelPhase($request, $statuses, $pid);
-        $users = $this->getUsers();
-        $customer_options = $this->customerService->getCustomerWithParent($pid);
-        $customersGroup = $this->customerService->countFilterCustomers($request, $statuses, $pid);
-        $pending_actions = $this->getPendingActions();
-        $phase = CustomerStatusPhase::find($pid);
-        $sources = CustomerSource::all();
-        $products = Product::all();
-        $scoring_interest = $this->getInterestOptions($request);
-        $scoring_profile = $this->getProfileOptions($request);
-        $customer = null;
-        $id = 0;
-        if ($model && isset($model[0])) {
-            //dd($model);
-            $customer = $model[0];
-            $id = $customer->id;
-        }
-        if (isset($request->customer_id)) {
-            $customer = Customer::find($request->customer_id);
-            $id = $request->customer_id;
-        }
-        //dd($model->scoring_profile);
-        $actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
-        $action_options = ActionType::orderby('weigth')->get();
-        $histories = CustomerHistory::where('customer_id', '=', $id)->get();
-        $email_options = Email::where('type_id', '=', 1)->where('active', '=', '1')->get();
-        $statuses_options = CustomerStatus::where('stage_id', $pid)->orderBy("weight", "ASC")->get();
-        $actual = true;
-        $today = Carbon\Carbon::now();
-        $audiences = Audience::all();
-        $messages = CampaignMessage::where('campaign_id', 11)->get();
-        $references = null;
-        if ($customer != null) {
-            $references = Reference::where('customer_id', '=', $customer->id)->orderby("created_at", "DESC")->get();
-        }
-        return view('customers.newIndex', compact('model', 'request', 'messages', 'customer_options', 'customersGroup', 'users', 'sources', 'pending_actions', 'products', 'statuses', 'scoring_interest', 'scoring_profile', 'customer', 'histories', 'actions', 'action_options', 'email_options', 'statuses_options', 'actual', 'today', 'audiences', 'references', 'phase', 'menu'));
-    }
-    public function getSources()
-    {
-        $model = CustomerSource::orderBy("name")->get();
-        return $model;
+        //dd(array($from_date_carbon, $to_date_carbon));
+
+        $model = Customer::leftJoin('customer_unsubscribes', 'customers.phone_wp', 'customer_unsubscribes.phone')
+            ->where(function ($query) use ($from_date_carbon, $to_date_carbon, $actualMonth, $actualDay) {
+                if ($from_date_carbon && $to_date_carbon) {
+                    // Filtramos los cumpleaños que caen dentro del rango de fechas
+                    $query->whereBetween(DB::raw("DATE_FORMAT(birthday, '%m-%d')"), [$from_date_carbon->format('m-d'), $to_date_carbon->format('m-d')]);
+                } else {
+                    // Búsqueda predeterminada por día y mes actual
+                    $query->whereMonth('birthday', $actualMonth)
+                        ->whereDay('birthday', $actualDay);
+                }
+            })
+            ->whereRaw("LENGTH(phone_wp)=10")
+            ->whereNull("customer_unsubscribes.phone")
+            ->distinct()
+            ->get();
+
+        return view('customers.whatsapp', compact('model'));
     }
 
+
+
+    public function getDates($request)
+    {
+        $to_date = Carbon\Carbon::today()->subDays(0); // hoy
+        $from_date = Carbon\Carbon::today()->subDays(3000); // hace 3000 días
+
+        if (isset($request->from_date) && ($request->from_date != null)) {
+            $from_date = Carbon\Carbon::createFromFormat('Y-m-d', $request->from_date);
+            $to_date = Carbon\Carbon::createFromFormat('Y-m-d', $request->to_date);
+        }
+
+        $to_date = $to_date->format('Y-m-d') . " 23:59:59";
+        $from_date = $from_date->format('Y-m-d') . " 00:00:00";
+
+        return array($from_date, $to_date);
+    }
+
+    public function monthly_birthday(Request $request)
+    {
+
+        $month = Carbon\Carbon::now()->format('m');
+
+        $model = Customer::leftJoin('customer_unsubscribes', 'customers.phone_wp', 'customer_unsubscribes.phone')
+            ->whereMonth('birthday', $month)
+            ->whereRaw("LENGTH(phone_wp)=10")
+            ->whereNull("customer_unsubscribes.phone")
+            ->distinct()
+            ->get();
+
+        return view('customers.whatsapp', compact('model'));
+    }
 
     public function leads(Request $request)
     {
-        if (!session()->has('stage_id'))
-            session(['stage_id' => 1]);
-        $stage_id = session('stage_id');
         $users = $this->getUsers();
-        $customer_options = $this->customerService->getCustomerWithParent($stage_id);
+        $customer_options = CustomerStatus::all();
         $statuses = $this->getStatuses($request, 1);
-        $model = $this->getModel($request, $statuses, 'leads');
-        $customersGroup = $this->customerService->countFilterCustomers($request, $statuses, $stage_id);
+        $model = $this->getModel($request, $statuses, 1);
+        $customersGroup = $this->countFilterCustomers($request, $statuses);
+        $projects = Project::all();
         $pending_actions = $this->getPendingActions();
-        $sources = $this->getSources();
-        $products = Product::all();
-        $scoring_interest = $this->getInterestOptions($request);
-        $scoring_profile = $this->getProfileOptions($request);
-        $country = Customer::where('status_id', 8)
-            ->select(DB::raw("DISTINCT(country)"))
-            ->get();
-        $customer = null;
-        $id = 0;
-        if ($model && isset($model[0])) {
-            //dd($model);
-            $customer = $model[0];
-            $id = $customer->id;
-        }
-        if (isset($request->customer_id)) {
-            $customer = Customer::find($request->customer_id);
-            $id = $request->customer_id;
-        }
-        //dd($model->scoring_profile);
-        $actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
-        $action_options = ActionType::orderby('weigth')->get();
-        $histories = CustomerHistory::where('customer_id', '=', $id)->get();
-        $email_options = Email::where('type_id', '=', 1)->where('active', '=', '1')->get();
-        $statuses_options = CustomerStatus::where('stage_id', $stage_id)->orderBy("weight", "ASC")->get();
-        $actual = true;
-        $today = Carbon\Carbon::now();
-        $audiences = Audience::all();
-        //$campaigns = Campaign::all();
-        $messages = CampaignMessage::where('campaign_id', 8)->get();
-        $metas = CustomerMetaData::find($request->customer_id);
-        $references = null;
-        if ($customer != null) {
-            $references = Reference::where('customer_id', '=', $customer->id)->orderby("created_at", "DESC")->get();
-        }
-        return view('customers.index', compact('model', 'metas', 'request', 'customer_options', 'customersGroup', 'users', 'sources', 'pending_actions', 'products', 'statuses', 'scoring_interest', 'scoring_profile', 'customer', 'histories', 'actions', 'action_options', 'email_options', 'statuses_options', 'actual', 'today', 'audiences', 'references', 'country', 'messages'));
-    }
 
 
-    // Función para normalizar números de teléfono
-    function normalizePhoneNumber($phoneNumber)
-    {
-        return preg_replace('/[^0-9]/', '', $phoneNumber);
-    }
-
-    public function updateDesmechadora()
-    {
-        $emails = $this->extractEmailsFromLogs(); // Asume que esta es la función que escribimos antes
-        foreach ($emails as $email) {
-            Customer::where('email', $email)->update(['inquiry_product_id' => 15]);
-        }
-    }
-    public function extractEmailsFromLogs()
-    {
-        $emails = Log::where('request', 'like', '%desmech%')
-            ->get()
-            ->map(function ($log) {
-                $data = json_decode($log->request, true);
-                $leads = Arr::get($data, 'leads', []);
-                $emails = [];
-                foreach ($leads as $lead) {
-                    // Intenta extraer el correo electrónico de diferentes partes del JSON
-                    $email = Arr::get($lead, 'email', null) ?: Arr::get($lead, 'email_lead', null);
-                    if ($email) {
-                        $emails[] = $email;
-                    }
-                }
-                return $emails;
-            })
-            ->flatten()
-            ->unique()
-            ->values();
-        return $emails;
-    }
+        $sources = CustomerSource::all();
 
 
-    public function statusName($id)
-    {
-        $datastatus = DB::table('customer_statuses')
-            ->where('id', '=', $id)
-            ->get();
-        return $datastatus->name;
+        return view('customers.index', compact('model', 'request', 'customer_options', 'customersGroup', 'query', 'users', 'sources', 'projects', 'pending_actions'));
     }
-    public function getModel(Request $request, $statuses, $action)
+
+    public function getModel(Request $request, $statuses, $phase_id, $paginate)
     {
-        $model = $this->customerService->filterModel($request, $statuses);
+        $model = $this->filterModel($request, $statuses, $phase_id, $paginate);
+
+
         $model->getActualRows = $model->currentPage() * $model->perPage();
+
+
         if ($model->perPage() > $model->total())
             $model->getActualRows = $model->total();
+        /*
         foreach ($model as $items) {
             if (isset($items->status_id)) {
                 $status = CustomerStatus::find($items->status_id);
@@ -476,289 +306,407 @@ class CustomerController extends Controller
                     $items->status_name = $status->name;
             }
         }
-        $model->action = $action;
+         */
+        $model->phase_id = $phase_id;
+
         return $model;
     }
+
+
+
     public function getUsers()
     {
         return  User::orderBy('name')
             ->where('users.status_id', 1)
             ->get();
     }
+
     public function getStatuses(Request $request, $step)
     {
-        /*
-            $statuses ="";
-            if(isset($request->from_date)||($request->from_date!="") )
-                $statuses = $this->getAllStatusID($step);
-            else{
-                
-                $statuses = $this->getStatusID($request, $step);
-            }    
-            return $statuses;
-            */
-        return $statuses = CustomerStatus::all();
+        $statuses;
+        if (($step == 0) || (isset($request->from_date) || ($request->from_date != "")))
+            $statuses = $this->getAllStatusID();
+        else
+            $statuses = $this->getStatusID($request, $step);
+
+
+        return $statuses;
     }
-    public function filterModelNew(Request $request, $statuses)
+
+
+
+
+
+
+    
+    public function filterModel(Request $request, $statuses, $phase_id, $paginate)
     {
+        //dd($request);
+
+        $status_array = array();
+        foreach ($statuses as $item)
+            $status_array[] = $item;
+        $dates = $this->getDates($request);
+
         //        $model = Customer::wherein('customers.status_id', $statuses)
-        $model = Customer::leftJoin('view_customers_followups', 'view_customers_followups.cid', 'customers.id')
-            ->leftJoin('audience_customer', 'audience_customer.customer_id', 'customers.id')
-            ->select(
-                'customers.id',
-                'customers.status_id',
-                'customers.product_id',
-                'customers.user_id',
-                'customers.created_at',
-                'customers.updated_at',
-                'customers.name',
-                'customers.phone',
-                'customers.email',
-                'customers.country',
-                DB::raw('max(if(outbound=0, actions.created_at, null)) as last_inbound_date'),
-                'notes',
-                'source_id',
-                'scoring_interest',
-                'scoring_profile'
-            )
+        /*
+        $model = Customer::
+                lefJoin('customer_points')
+                ->select('recency')
+
+*/      //dd($status_array);
+
+        $model = Customer::select(
+            'address',
+            'total_sold',
+            'bought_products',
+            'scoring',
+            'customers.id',
+            'customers.status_id',
+            'customers.project_id',
+            'customers.user_id',
+            'customers.source_id',
+            'customers.created_at',
+            'customers.updated_at',
+            'customers.name',
+            'customers.phone',
+            'customers.phone2',
+            'customers.document',
+            'customers.email',
+            'customers.phone_wp'
+        )
+
             ->where(
                 // Búsqueda por...
-                function ($query) use ($request) {
-                    if (isset($request->from_date) && ($request->from_date != null)) {
-                        if (isset($request->created_updated)  && ($request->created_updated == "updated"))
-                            $query = $query->whereBetween('customers.updated_at', array($request->from_date, $request->to_date));
-                        if (isset($request->created_updated)  && ($request->created_updated == "created"))
-                            $query = $query->whereBetween('customers.created_at', array($request->from_date, $request->to_date));
+                function ($query) use ($request, $phase_id, $status_array, $dates) {
+
+
+                    if ((isset($phase_id) && ($phase_id != null) && ($phase_id != 0)) && (!isset($request->search))) {
+                        //$query->where('stage_id', $phase_id);
+                        $query->whereIn('customers.status_id', $status_array);
                     }
-                    if (isset($request->product_id)  && ($request->product_id != null)) {
-                        if ($request->product_id == 1)
-                            $query = $query->whereIn('customers.product_id', array(1, 6, 7, 8, 9, 10, 11));
-                        else
-                            $query = $query->where('customers.product_id', $request->product_id);
-                    }
-                    if (isset($request->user_id)  && ($request->user_id != null))
-                        $query = $query->where('customers.user_id', $request->user_id);
-                    if (isset($request->source_id)  && ($request->source_id != null))
-                        $query = $query->where('customers.source_id', $request->source_id);
-                    if (isset($request->status_id)  && ($request->status_id != null))
-                        $query = $query->where('customers.status_id', $request->status_id);
+
+
                     if (isset($request->scoring_interest)  && ($request->scoring_interest != null))
                         $query->where('customers.scoring_interest', $request->scoring_interest);
-                    if (isset($request->scoring_profile)  && ($request->scoring_profile != null))
-                        $query->where('customers.scoring_profile', $request->scoring_profile);
+                    if (isset($request->audience_id)  && ($request->audience_id != null)) {
+                        $query->where('audience_customer.audience_id', $request->audience_id);
+                    }
+
+
+
+                    /*
+                if ( (isset($request->created_updated) &&  ($request->created_updated=="updated")) ) 
+                    $query->whereBetween('customers.updated_at', $dates);
+                else
+                    $query->whereBetween('customers.created_at', $dates);
+                */
+
+                    // Asumimos que $query ya está definido y que $dates contiene el rango de fechas deseado.
+
+                    // Define variables para fechas y mes/día actuales
+                    $from_date_carbon = null;
+                    $to_date_carbon = null;
+                    $actualMonth = null;
+                    $actualDay = null;
+
+                    // Verifica si el request incluye las fechas 'from_date' y 'to_date'
+                    if (!empty($request->from_date) && !empty($request->to_date)) {
+                        list($from_date, $to_date) = $this->getDates($request);
+
+                        // getDates devuelve las fechas con las horas al inicio/final del día, no es necesario agregar la hora nuevamente
+                        $from_date_carbon = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $from_date);
+                        $to_date_carbon = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $to_date);
+                    } else {
+                        // Definimos el mes y día actual para la búsqueda predeterminada
+                        $actualMonth = Carbon\Carbon::now()->format('m');
+                        $actualDay = Carbon\Carbon::now()->format('d');
+                    }
+
+                    // Filtrar por cumpleaños
+                    switch ($request->created_updated ?? 'created') {
+                        case "updated":
+                            // Filtra por la fecha de actualización entre el rango de fechas especificado
+                            $query->whereBetween('customers.updated_at', $dates);
+                            break;
+                        case "birthday":
+                            if ($from_date_carbon && $to_date_carbon) {
+                                // Filtra por cumpleaños dentro del rango de fechas proporcionado
+                                $query->whereBetween(DB::raw("DATE_FORMAT(customers.birthday, '%m-%d')"), [$from_date_carbon->format('m-d'), $to_date_carbon->format('m-d')]);
+                            } else {
+                                // Filtra por cumpleaños que coincidan con el mes y día actuales
+                                $query->whereMonth('customers.birthday', '=', $actualMonth)
+                                    ->whereDay('customers.birthday', '=', $actualDay);
+                            }
+                            break;
+                        default:
+                            // El caso por defecto es filtrar por la fecha de creación entre el rango de fechas especificado
+                            $query->whereBetween('customers.created_at', $dates);
+                            break;
+                    }
+                    if (isset($request->status_id)  && ($request->status_id != null))
+                        $query->where('customers.status_id', $request->status_id);
+
+                    /*
+                if (isset($request->user_id)  && ($request->user_id != null))
+                    $query->where('user_id', $request->user_id);
+                
+                    if (isset($request->source_id)  && ($request->source_id != null))
+                    $query->where('source_id', $request->source_id);
+                if (isset($request->project_id)  && ($request->project_id != null))
+                    $query->where('project_id', $request->project_id);
+                
+                
+                if (isset($request->scoring)  && ($request->scoring != null))
+                        $query = $query->where('customers.scoring', $request->scoring);
+                */
                     if (isset($request->search)) {
-                        $query = $query->where(
+                        $query->where(
                             function ($innerQuery) use ($request) {
-                                $innerQuery->orwhere('customers.name', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.email',   "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.document', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.position', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.business', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.phone',   "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.phone2',   "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.notes',   "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.city',    "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.country', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.bought_products', "like", "%" . $request->search . "%");
-                                //$innerQuery->orwhere('customers.status_temp',"like", "%".$request->search."%");
-                                $innerQuery->orwhere('customers.contact_name', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.contact_phone2', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.contact_email', "like", "%" . $request->search . "%");
-                                $innerQuery->orwhere('customers.contact_position', "like", "%" . $request->search . "%");
+
+                                $search = html_entity_decode($request->search);
+
+                                $innerQuery->orwhere('customers.name', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.email',   "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.document', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.position', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.business', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.phone',   "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.phone2',   "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.phone_wp',   "like", "%" . $search . "%");
+
+                                $innerQuery->orwhere('customers.notes',   "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.city',    "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.country', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.bought_products', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.contact_name', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.contact_phone2', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.contact_email', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.contact_position', "like", "%" . $search . "%");
                             }
                         );
                     }
                     if (isset($request->actions_number)) {
-                        $query->havingRaw('lead07 = ' . $request->actions_number);
+                        $query->havingRaw('count(actions.id) = ?', [$request->actions_number]);
                         $query->where('outbound', '1');
                     }
-                    //PENDIENTE 
-                    if (isset($request->week)) {
-                        $query->where('view_customers_followups.week', $request->week);
-                        $query->where('view_customers_followups.year', $request->year);
-                        $query->whereIn('customers.status_id', [1, 28]);
-                        //$dates = $this->getWeek($request->week);
-                        //$query->whereBetween('view_customers_followups.created_at', $dates);
-                        //$query->whereBetween('created_at', array($request->from_date, $request->to_date));
-                    }
-                    if (isset($request->lead)) {
-                        $lead = $this->getLead($request->lead);
-                        $sql = "view_customers_followups." . $lead;
-                        if (isset($request->with) && ($request->with == 1))
-                            $query->where($sql, "<>", 0);
-                        elseif (isset($request->with) && ($request->with == 0))
-                            $query->where($sql, "=", 0);
-                        //$query->select(DB::raw("sum(if(".$lead."<>0,1,0))>0 as lean_time"));
-                        //$query->where('outbound', '1');    
-                    }
                 }
-            )
-            ->groupBy(
-                'customers.id',
-                'customers.status_id',
-                'customers.email',
-                'customers.name',
-                'customers.phone',
-                'customers.product_id',
-                'customers.user_id',
-                'customers.created_at',
-                'customers.updated_at',
-                'customers.country',
-                'notes',
-                'source_id',
-                'scoring_interest',
-                'scoring_profile'
-            )
-            ->orderBy('customers.created_at', 'DESC')
-            //->havingRaw('(count(if(outbound=0, actions.created_at, null)))','is not null')
-            ->paginate(10);
+
+
+            )->orderBy('customers.status_id', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->paginate($paginate);
+
+
+
+
         return $model;
     }
 
+    public function filterModelFull(Request $request, $statuses, $paginate)
+    {
 
-    public function getWeek($week)
-    {
-        $from_date = \Carbon\Carbon::create(2021, 1, 1, 0, 0, 0, 'America/Bogota');
-        $from_date = $from_date->addWeek($week);
-        $to_date = \Carbon\Carbon::create(2021, 1, 1, 0, 0, 0, 'America/Bogota');
-        $to_date = $to_date->addWeek($week);
-        $to_date = $to_date->addDays(7);
-        return array($from_date, $to_date);
-    }
-    /* public function userName(Request $request){
-        $model = Users::
-        leftJoin('customers', 'customers.id')
-            ->select('users.name')
-            ->where(
-                function ($query) use ($request) {
-                
-                    if(isset($request->name)  && ($request->name!=null))
-                    $query = $query->where('users.name', $request->name);
-               
-                }
-           
-            )
-            ->groupBy('users.name')
-            ->get();
-            return $model;
-    } */
+        //        $model = Customer::wherein('customers.status_id', $statuses)
 
-    public function filterModel50(Request $request, $statuses)
-    {
-        //        $model = Customer::wherein('customers.status_id', $statuses)
-        $model = Customer::leftJoin('actions', 'actions.customer_id', 'customers.id')
-            ->leftJoin('action_types', 'actions.type_id', 'action_types.id')
-            ->select(
-                'customers.id',
-                'customers.status_id',
-                'customers.product_id',
-                'customers.user_id',
-                'customers.created_at',
-                'customers.updated_at',
-                'customers.name',
-                'customers.phone',
-                'customers.email',
-                DB::raw('(count(if(outbound=0, actions.created_at, null))) / (now()-max(if(outbound=0, actions.created_at, null)))   as kpi'),
-                DB::raw('
-(now()-max(if(outbound=0, actions.created_at, null)))   as recency'),
-                DB::raw('max(if(outbound=0, actions.created_at, null)) as last_inbound_date')
-            )
-            ->where(
-                // Búsqueda por...
-                function ($query) use ($request) {
-                    if (isset($request->from_date) && ($request->from_date != null)) {
-                        if (isset($request->user_id)  && ($request->user_id != null))
-                            $query = $query->whereBetween('customers.updated_at', array($request->from_date, $request->to_date));
-                        else
-                            $query = $query->whereBetween('customers.created_at', array($request->from_date, $request->to_date));
-                    }
-                    if (isset($request->user_id)  && ($request->user_id != null))
-                        $query = $query->where('customers.user_id', $request->user_id);
-                    if (isset($request->source_id)  && ($request->source_id != null))
-                        $query = $query->where('customers.source_id', $request->source_id);
-                    if (isset($request->status_id)  && ($request->status_id != null))
-                        $query = $query->where('customers.status_id', $request->status_id);
-                    if (isset($request->scoring_interest)  && ($request->scoring_interest != null))
-                        $query->where('customers.scoring_interest', $request->scoring_interest);
-                    if (isset($request->scoring_profile)  && ($request->scoring_profile != null))
-                        $query->where('customers.scoring_profile', $request->scoring_profile);
-                    if (isset($request->search)) {
-                        $query = $query->orwhere('customers.name', "like", "%" . $request->search . "%");
-                        $query = $query->orwhere('customers.email',   "like", "%" . $request->search . "%");
-                        $query = $query->orwhere('customers.document', "like", "%" . $request->search . "%");
-                        $query = $query->orwhere('customers.business', "like", "%" . $request->search . "%");
-                        $query = $query->orwhere('customers.position', "like", "%" . $request->search . "%");
-                        $query = $query->orwhere('customers.phone',   "like", "%" . $request->search . "%");
-                        $query = $query->orwhere('customers.phone2',   "like", "%" . $request->search . "%");
-                        $query = $query->orwhere('customers.notes',   "like", "%" . $request->search . "%");
-                        $query = $query->orwhere('customers.city',    "like", "%" . $request->search . "%");
-                        $query = $query->orwhere('customers.country', "like", "%" . $request->search . "%");
-                        $query = $query->orwhere('customers.bought_products', "like", "%" . $request->search . "%");
-                        //$query = $query->orwhere('customers.status_temp',"like", "%".$request->search."%");
-                        $query = $query->orwhere('customers.contact_name', "like", "%" . $request->search . "%");
-                        // $query = $innerQuery->orwhere('actions.note',"like", "%".$request->search."%");
-                    }
-                }
-            )
-            ->groupBy(
-                'customers.id',
-                'customers.status_id',
-                'customers.email',
-                'customers.name',
-                'customers.phone',
-                'customers.product_id',
-                'customers.user_id',
-                'customers.created_at',
-                'customers.updated_at'
-            )
-            ->orderBy('customers.status_id', 'asc')
-            ->orderByRaw('(count(if(outbound=0, actions.created_at, null))) / 
-(now()-max(if(outbound=0, actions.created_at, null))) DESC')
-            ->orderBy('customers.created_at', 'desc')
-            ->paginate(50);
-        return $model;
-    }
-    public function filterModelFullColombia(Request $request, $statuses)
-    {
-        //        $model = Customer::wherein('customers.status_id', $statuses)
         $model = Customer::where(
             // Búsqueda por...
             function ($query) use ($request) {
+
                 if (isset($request->from_date) && ($request->from_date != null)) {
-                    if (isset($request->user_id)  && ($request->user_id != null))
-                        $query = $query->whereBetween('customers.updated_at', array($request->from_date, $request->to_date));
+
+                    if ((isset($request->created_updated) &&  ($request->created_updated == "updated")))
+                        $query->whereBetween('updated_at', array($request->from_date, $request->to_date));
                     else
-                        $query = $query->whereBetween('customers.created_at', array($request->from_date, $request->to_date));
+                        $query->whereBetween('created_at', array($request->from_date, $request->to_date));
                 }
+
                 if (isset($request->user_id)  && ($request->user_id != null))
-                    $query = $query->where('customers.user_id', $request->user_id);
-                if (isset($request->source_id)  && ($request->source_id != null))
-                    $query = $query->where('customers.source_id', $request->source_id);
+                    $query->where('user_id', $request->user_id);
                 if (isset($request->status_id)  && ($request->status_id != null))
-                    $query = $query->where('customers.status_id', $request->status_id);
+                    $query->where('status_id', $request->status_id);
+                if (isset($request->source_id)  && ($request->source_id != null))
+                    $query->where('source_id', $request->source_id);
+                if (isset($request->project_id)  && ($request->project_id != null))
+                    $query->where('project_id', $request->project_id);
+
                 if (isset($request->search)) {
-                    $query = $query->orwhere('customers.name', "like", "%" . $request->search . "%");
-                    $query = $query->orwhere('customers.email',   "like", "%" . $request->search . "%");
-                    $query = $query->orwhere('customers.document', "like", "%" . $request->search . "%");
-                    $query = $query->orwhere('customers.business', "like", "%" . $request->search . "%");
-                    $query = $query->orwhere('customers.position', "like", "%" . $request->search . "%");
-                    $query = $query->orwhere('customers.phone',   "like", "%" . $request->search . "%");
-                    $query = $query->orwhere('customers.phone2',   "like", "%" . $request->search . "%");
-                    $query = $query->orwhere('customers.notes',   "like", "%" . $request->search . "%");
-                    $query = $query->orwhere('customers.city',    "like", "%" . $request->search . "%");
-                    $query = $query->orwhere('customers.country', "like", "%" . "Colombia" . "%");
-                    $query = $query->orwhere('customers.bought_products', "like", "%" . $request->search . "%");
-                    //$query = $query->orwhere('customers.status_temp',"like", "%".$request->search."%");
-                    $query = $query->orwhere('customers.contact_name', "like", "%" . $request->search . "%");
-                    // $query = $innerQuery->orwhere('actions.note',"like", "%".$request->search."%");
+                    $query->where(function ($innerQuery) use ($request) {
+                        $innerQuery->orwhere('customers.name', "like", "%" . $request->search . "%");
+                        $innerQuery->orwhere('customers.email',   "like", "%" . $request->search . "%");
+                        $innerQuery->orwhere('customers.document', "like", "%" . $request->search . "%");
+                        $innerQuery->orwhere('customers.business', "like", "%" . $request->search . "%");
+                        $innerQuery->orwhere('customers.position', "like", "%" . $request->search . "%");
+                        $innerQuery->orwhere('customers.phone',   "like", "%" . $request->search . "%");
+                        $innerQuery->orwhere('customers.phone_wp',   "like", "%" . $request->search . "%");
+
+                        $innerQuery->orwhere('customers.phone2',   "like", "%" . $request->search . "%");
+                        $innerQuery->orwhere('customers.notes',   "like", "%" . $request->search . "%");
+                        $innerQuery->orwhere('customers.city',    "like", "%" . $request->search . "%");
+                        $innerQuery->orwhere('customers.country', "like", "%" . $request->search . "%");
+                        $innerQuery->orwhere('customers.bought_products', "like", "%" . $request->search . "%");
+                        $innerQuery->orwhere('customers.contact_name', "like", "%" . $request->search . "%");
+                    });
                 }
             }
+
+
         )
             ->orderBy('status_id', 'asc')
             ->orderBy('created_at', 'desc')
             ->get();
+
         return $model;
     }
+
+    public function getDatesOld($request)
+    {
+        $to_date = Carbon\Carbon::today()->subDays(0); // ayer
+        $from_date = Carbon\Carbon::today()->subDays(3000);
+
+        if (isset($request->from_date) && ($request->from_date != null)) {
+
+
+            $from_date = Carbon\Carbon::createFromFormat('Y-m-d', $request->from_date);
+            $to_date = Carbon\Carbon::createFromFormat('Y-m-d', $request->to_date);
+        }
+
+        $to_date = $to_date->format('Y-m-d') . " 23:59:59";
+        $from_date = $from_date->format('Y-m-d');
+
+        return array($from_date, $to_date);
+    }
+
+    public function countFilterCustomers($request, $statuses)
+    {
+        //$customersGroup = Customer::wherein('customers.status_id', $statuses)
+        $dates = $this->getDates($request);
+
+        $customersGroup = CustomerStatus::wherein('customer_statuses.id', $statuses)
+            ->leftJoin("customers", 'customers.status_id', '=', 'customer_statuses.id')
+            ->where(
+
+                // Búsqueda por...
+                function ($query) use ($request, $dates) {
+                    /*
+                    if (isset($request->from_date) && ($request->from_date != null)) {
+
+                        if ( (isset($request->created_updated) &&  ($request->created_updated=="updated")) ) 
+                            $query->whereBetween('customers.updated_at', $dates);
+                        else
+                            $query->whereBetween('customers.created_at', $dates);
+                    }
+
+*/
+                    // Define el mes y el día actual
+                    // Define variables para fechas y mes/día actuales
+                    $from_date_carbon = null;
+                    $to_date_carbon = null;
+                    $actualMonth = null;
+                    $actualDay = null;
+
+                    // Verifica si el request incluye las fechas 'from_date' y 'to_date'
+                    if (!empty($request->from_date) && !empty($request->to_date)) {
+                        list($from_date, $to_date) = $this->getDates($request);
+
+                        // getDates devuelve las fechas con las horas al inicio/final del día, no es necesario agregar la hora nuevamente
+                        $from_date_carbon = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $from_date);
+                        $to_date_carbon = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $to_date);
+                    } else {
+                        // Definimos el mes y día actual para la búsqueda predeterminada
+                        $actualMonth = Carbon\Carbon::now()->format('m');
+                        $actualDay = Carbon\Carbon::now()->format('d');
+                    }
+
+                    // Filtrar por cumpleaños
+                    switch ($request->created_updated ?? 'created') {
+                        case "updated":
+                            // Filtra por la fecha de actualización entre el rango de fechas especificado
+                            $query->whereBetween('customers.updated_at', $dates);
+                            break;
+                        case "birthday":
+                            if ($from_date_carbon && $to_date_carbon) {
+                                // Filtra por cumpleaños dentro del rango de fechas proporcionado
+                                $query->whereBetween(DB::raw("DATE_FORMAT(customers.birthday, '%m-%d')"), [$from_date_carbon->format('m-d'), $to_date_carbon->format('m-d')]);
+                            } else {
+                                // Filtra por cumpleaños que coincidan con el mes y día actuales
+                                $query->whereMonth('customers.birthday', '=', $actualMonth)
+                                    ->whereDay('customers.birthday', '=', $actualDay);
+                            }
+                            break;
+                        default:
+                            // El caso por defecto es filtrar por la fecha de creación entre el rango de fechas especificado
+                            $query->whereBetween('customers.created_at', $dates);
+                            break;
+                    }
+                    if (isset($request->user_id)  && ($request->user_id != null))
+                        $query->where('customers.user_id', $request->user_id);
+                    if (isset($request->source_id)  && ($request->source_id != null))
+                        $query->where('customers.source_id', $request->source_id);
+                    if (isset($request->status_id)  && ($request->status_id != null))
+                        $query->where('customers.status_id', $request->status_id);
+                    if (isset($request->scoring)  && ($request->scoring != null))
+                        $query->where('customers.scoring', $request->scoring);
+
+                    if (isset($request->project_id)  && ($request->project_id != null))
+                        $query->where('project_id', $request->project_id);
+
+                    /* ACA */
+
+                    if (isset($request->search)) {
+                        $query->where(
+                            function ($innerQuery) use ($request) {
+
+                                $search = html_entity_decode($request->search);
+
+                                $innerQuery->orwhere('customers.name', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.email',   "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.document', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.position', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.business', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.phone',   "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.phone2',   "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.phone_wp',   "like", "%" . $search . "%");
+
+                                $innerQuery->orwhere('customers.notes',   "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.city',    "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.country', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.bought_products', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.contact_name', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.contact_phone2', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.contact_email', "like", "%" . $search . "%");
+                                $innerQuery->orwhere('customers.contact_position', "like", "%" . $search . "%");
+                            }
+                        );
+                    }
+                }
+            )
+            ->select(DB::raw('customer_statuses.id as status_id, count(customers.id) as count'))
+            ->groupBy('customer_statuses.id')
+            ->groupBy('weight')
+
+            ->orderBy('weight', 'ASC')
+
+            ->get();
+
+        //dd($customersGroup);
+        foreach ($customersGroup as $item) {
+            $included = false;
+            foreach ($statuses as $status => $value) {
+                if ($value == $item->status_id) {
+                    $included = true;
+                }
+            }
+            if ($included) {
+                $item->color = CustomerStatus::getColor($item->status_id);
+                $item->name = CustomerStatus::getName($item->status_id);
+                $item->id = $item->status_id;
+            }
+        }
+        return $customersGroup;
+    }
+
+
+
     /**
      * Show the form for creating a new resource.
      *
@@ -766,16 +714,186 @@ class CustomerController extends Controller
      */
     public function create()
     {
-        $stage_id = session('stage_id', '1');
         $users = User::all();
-        $customers_statuses = CustomerStatus::where('status_id', 1)
-            ->where("stage_id", $stage_id)
-            ->orderBy('stage_id', 'ASC')
-            ->orderBy('weight', 'ASC')
+        $customers_statuses = CustomerStatus::orderBy('stage_id', 'ASC')->orderBy('weight', 'ASC')->get();
+        $customer_sources = CustomerSource::all();
+        $projects = Project::all();
+        return view('customers.create', compact('customers_statuses', 'users', 'customer_sources', 'projects'));
+    }
+
+
+    public function storeMetaDataFromSelect($model, $mid, $select)
+    {
+        if (is_array($select)) {
+            foreach ($select as $item) {
+                if ($this->isValidMeta($item)) {
+                    $meta = new CustomerMeta;
+                    $meta->customer_id = $model->id;
+                    $meta->metadata_id = $item;
+                    $meta->metadata_type_id = $mid;
+                    $meta->save();
+                }
+            }
+        } else {
+            if ($this->isValidMeta($select)) {
+                $meta = new CustomerMeta;
+                $meta->customer_id = $model->id;
+                $meta->metadata_id = $select;
+                $meta->metadata_type_id = $mid;
+                $meta->save();
+            }
+        }
+    }
+
+    public function insertMetaData($cid, $mid, $mdid)
+    {
+        $model = CustomerMeta::where('customer_id', $cid)
+            ->where('metadata_id', $mid)
+            ->first();
+
+
+        if (!$model) {
+
+            $new = new CustomerMeta;
+            $new->customer_id = $cid;
+            $new->metadata_id = $mid;
+            $new->metadata_type_id = $mdid;
+            $new->save();
+        }
+    }
+
+    public function selectToArray($select)
+    {
+        $array = array();
+
+        if (is_array($select)) {
+
+            foreach ($select as $item) {
+                if ($this->isValidMeta($item))
+                    $array[] = $item;
+            }
+        } else {
+            if ($this->isValidMeta($select))
+                $array[] = $select;
+        }
+
+
+        return $array;
+    }
+
+    public function elocuentToArray($model)
+    {
+        $array = array();
+
+        if ($model)
+            foreach ($model as $item)
+                $array[] = $item->id;
+
+
+        return $array;
+    }
+
+
+    public function updateMetaDataFromSelect($model, $mid, $select)
+    {
+        $newMeta = $this->selectToArray($select);
+
+        // busco las metadata actuales
+        $cm = CustomerMeta::select('id')
+            ->where('customer_id', $model->id)
+            ->where('metadata_type_id', $mid)
+            ->where('customer_id', $model->id)
+            //->whereNotIn('metadata_id', $select)
             ->get();
-        $customer_sources = CustomerSource::orderBy('name')->get();
-        $products = Product::all();
-        return view('customers.create', compact('products', 'customers_statuses', 'users', 'customer_sources'));
+
+        // eliminar las actuales  que no están en la lista
+
+        if ($cm) {
+            CustomerMeta::destroy($this->elocuentToArray($cm));
+        }
+
+        foreach ($newMeta as $item) {
+            $this->insertMetaData($model->id, $item, $mid);
+        }
+    }
+
+
+    public function isValidMeta($meta)
+    {
+        $valid = true;
+        if ($meta == "Seleccione...")
+            $valid = false;
+        return $valid;
+    }
+    public function storeFromRequest(Request $request)
+    {
+
+        $model = new Customer;
+        $model->name = $request->name;
+        $model->document = $request->document;
+        $model->position = $request->position;
+        $model->business = $request->business;
+        $model->phone = $request->phone;
+        $model->phone2 = $request->phone2;
+        $model->email = $request->email;
+        $model->notes = $request->notes;
+
+        $model->pathology = $request->pathology;
+        $model->total_sold = $request->total_sold;
+        $model->bought_products = $request->bought_products;
+
+        $model->hobbie = $request->hobbie;
+        $model->facebook_url = $request->facebook_url;
+        $model->instagram_url = $request->instagram_url;
+
+
+        $model->address = $request->address;
+        $model->city = $request->city;
+        $model->country = $request->country;
+        $model->department = $request->department;
+        $model->bought_products = $request->bought_products;
+        $model->status_id = $request->status_id;
+        $model->user_id = $request->user_id;
+        $model->source_id = $request->source_id;
+        $model->project_id = $request->project_id;
+
+        if (isset($request->birthday) && ($request->birthday != null))
+            $model->birthday = $request->birthday;
+        //$model->first_installment_date = $request->first_installment_date;
+
+        //datos de contacto
+        $model->contact_name = $request->contact_name;
+        $model->contact_phone2 = $request->contact_phone2;
+        $model->contact_email = $request->contact_email;
+        $model->contact_position = $request->contact_position;
+        $model->scoring = $request->scoring;
+
+        if (isset($request->meta_gender_id) && ($this->isValidMeta($request->meta_gender_id)))
+            $model->meta_gender_id = $request->meta_gender_id;
+        if (isset($request->meta_economic_activity_id) && ($this->isValidMeta($request->meta_economic_activity_id)))
+            $model->meta_economic_activity_id = $request->meta_economic_activity_id;
+        if (isset($request->meta_income_id) && ($this->isValidMeta($request->meta_income_id)))
+            $model->meta_income_id = $request->meta_income_id;
+        /*
+        if(isset($request->meta_investment_id)&& ($this->isValidMeta($request->meta_investment_id)))
+            $model->meta_investment_id = $request->meta_investment_id;
+        */
+
+
+
+        if ($model->save()) {
+            /*
+            $this->storeMetaDataFromSelect($model, 1, $request->meta_house_mates_id);
+            $this->storeMetaDataFromSelect($model, 2, $request->meta_funding_source_id);
+            $this->storeMetaDataFromSelect($model, 3, $request->meta_final_fundig_source_id);
+            */
+
+            //$this->sendWelcomeMail($model);
+
+            //$this->sendMail(1, $model);
+            return redirect('customers/' . $model->id . '/show')->with('status', 'El Cliente <strong>' . $model->name . '</strong> fué añadido con éxito!');
+        }
+        dd($model);
     }
     /**
      * Store a newly created resource in storage.
@@ -785,79 +903,14 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        $model = new Customer;
-        $model->name = $request->name;
-        $model->document = $request->document;
-        $model->position = $request->position;
-        $model->business = $request->business;
-        $model->product_id = $request->product_id;
-        $model->phone = $request->phone;
-        $model->phone2 = $request->phone2;
-        $model->email = $request->email;
-        $model->notes = $request->notes;
-        $model->count_empanadas = $request->count_empanadas;
-        $model->address = $request->address;
-        $model->city = $request->city;
-        $model->country = $request->country;
-        $model->department = $request->department;
-        $model->bought_products = $request->bought_products;
-        $model->total_sold = $request->total_sold;
-        $model->purchase_date = $request->purchase_date;
-        $model->status_id = $request->status_id;
-        $model->user_id = $request->user_id;
-        $model->source_id = $request->source_id;
-        $model->technical_visit = $request->technical_visit;
-        //datos de contacto
-        $model->contact_name = $request->contact_name;
-        $model->contact_phone2 = $request->contact_phone2;
-        $model->contact_email = $request->contact_email;
-        $model->contact_position = $request->contact_position;
-        $model->scoring_interest = $request->scoring_interest;
-        $model->scoring_profile = $request->scoring_profile;
-        $model->rd_public_url = $request->rd_public_url;
-        $model->empanadas_size = $request->empanadas_size;
-        $model->number_venues = $request->number_venues;
-        if (Auth::id()) {
-            $model->updated_user_id = Auth::id();
-            $model->creator_user_id = Auth::id();
-        }
-        $model->maker = $request->maker;
-        $this->sendToRDStationFromCRM($model);
-        if ($model->save()) {
-            $this->storeActionHandbook($model);
-            $this->sendWelcomeMail($model);
-            return redirect('leads?customer_id=' . $model->id)->with('status', 'El Cliente <strong>' . $model->name . '</strong> fué añadido con éxito!');
-        }
-    }
-    public function sendWelcomeMail($customer)
-    {
-        $email_id = 46;
-        $email = Email::find($email_id);
-        $count = Email::sendUserEmailWelcome($customer->id, $email->subject, $email->view, $email->id);
-        $this->storeEmailAction($email, $customer, "Correo automático de notificación");
-        return back();
-    }
-    public function storeEmailAction($mail, $customer, $note)
-    {
-        $today = Carbon\Carbon::now();
-        // envio mail
-        $action_type_id = 2;
-        $model = new Action;
-        $model->note = $note;
-        $model->type_id = $action_type_id;
-        $model->creator_user_id = 0;
-        $model->customer_id = $customer->id;
-        $model->delivery_date = $today;
-        $model->save();
-    }
-    public function storeActionHandbook($model)
-    {
-        $action = new Action;
-        $action->type_id = 26;
-        $action->creator_user_id = Auth::id();
-        $action->customer_id = $model->id;
-        $action->save();
-        return back();
+        //    $count = $this->isEqual($request);
+        $similar = $this->getSimilar($request);
+
+        if (($similar == null) || ($similar->count() == 0))
+
+            return $this->storeFromRequest($request);
+        else
+            return redirect('/customers/' . $similar[0]->id . '/show');
     }
     /**
      * Display the specified resource.
@@ -865,96 +918,56 @@ class CustomerController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $model = Customer::find($id);
-        $action_options = ActionType::orderby('weigth')->get();
-        $actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
-        $histories = CustomerHistory::where('customer_id', '=', $id)->get();
-        $email_options = Email::where('type_id', '=', 1)->where('active', '=', '1')->get();
-        $statuses_options = CustomerStatus::
-            where('status_id', 1)
-            ->orderBy('stage_id', "ASC")
-            ->orderBy("weight", "ASC")->get();
-        $actual = true;
-        $today = Carbon\Carbon::now();
-        $audiences = Audience::all();
-        $meta_data = CustomerMetaData::all();
-        $metas = CustomerMetaData::leftJoin('customer_metas', 'customer_meta_datas.id', 'customer_metas.meta_data_id')
-            ->select('customer_meta_datas.value as name', 'customer_metas.value', 'customer_metas.created_at', 'customer_meta_datas.type_id', 'customer_meta_datas.parent_id')
-            ->where('customer_id', '=', $id)
-            ->get();
-        $weighted = 0;
-        $test = CustomerMeta::leftJoin('customer_meta_datas', 'customer_meta_datas.id', 'customer_metas.meta_data_id')
-            ->select(DB::raw('ROUND(SUM(customer_metas.value)/COUNT(customer_metas.meta_data_id)) AS average'))
-            ->where('customer_metas.customer_id', '=', $id)
-            ->where('customer_meta_datas.type_id', '=', 1)
-            ->get();
-        return view('customers.show', compact('model', 'histories', 'test',  'meta_data', 'metas', 'audiences', 'actions', 'action_options', 'email_options', 'statuses_options', 'actual', 'today'));
-    }
-    public function showAction($id, $Aid)
-    {
-        $actionProgramed = Action::find($Aid);
+
         $model = Customer::find($id);
         $actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
-        $action_options = ActionType::all();
+        $action_options = ActionType::orderBy("weight", "ASC")->get();
         $histories = CustomerHistory::where('customer_id', '=', $id)->get();
         $email_options = Email::all();
-        $statuses_options = CustomerStatus::orderBy("weight", "ASC")->get();
+        $statuses_options = CustomerStatus::orderBy("stage_id", "ASC")->orderBy("weight", "ASC")->get();
         $actual = true;
         $today = Carbon\Carbon::now();
-        return view('customers.show', compact('model', 'histories', 'actions', 'action_options', 'email_options', 'statuses_options', 'actual', 'today', 'actionProgramed'));
+
+        $pending_action = Action::find($request->pending_action_id);
+
+
+        return view('customers.show', compact('model', 'histories', 'actions', 'action_options', 'email_options', 'statuses_options', 'actual', 'today', 'pending_action'));
     }
-    public function showHistory($id)
-    {
-        $model = CustomerHistory::find($id);
-        $actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
-        $action_options = ActionType::all();
-        $histories = null;
-        $email_options = Email::all();
-        $statuses_options = CustomerStatus::orderBy("weight", "ASC")->get();
-        $actual = false;
-        return view('customers.show', compact('model', 'histories', 'actions', 'action_options', 'email_options', 'statuses_options', 'actual'));
-    }
+
     /**
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id, Request $request)
+    public function edit($id)
     {
-        $stage_id = session("stage_id", 1);
         $model = Customer::find($id);
-        $customer_statuses = CustomerStatus::orderBy("stage_id", "ASC")
-            ->where("stage_id", $stage_id)
-            ->orderBy("weight", "ASC")
-            ->get();
+        $customer_statuses = CustomerStatus::orderBy("stage_id", "ASC")->orderBy("weight", "ASC")->get();
         $customer_sources = CustomerSource::all();
         $users = User::all();
-        $scoring_profile = $this->getProfileOptionsOrder();
-        $products = Product::all();
-        return view('customers.edit', compact('products', 'model', 'customer_statuses', 'users', 'customer_sources', 'scoring_profile'));
+
+        $projects = Project::all();
+
+
+
+        return view('customers.edit', compact('model', 'customer_statuses',  'users', 'customer_sources', 'projects'));
     }
+
+
     public function assignMe($id)
     {
         $model = Customer::find($id);
         if (is_null($model->user_id) || $model->user_id == 0) {
             $user =  Auth::id();
             $model->user_id = $user;
-            if (Auth::id())
-                $model->updated_user_id = Auth::id();
             $model->save();
         }
         return back();
     }
-    public function updateAjax(Request $request)
-    {
-        $model = Customer::find($request->customer_id);
-        $model->user_id = $request->user_id;
-        $model->save();
-        return $model->id;
-    }
+
     /**
      * Update the specified resource in storage.
      *
@@ -964,10 +977,12 @@ class CustomerController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //dd($request);
         $model = Customer::find($id);
+
+
         $cHistory = new CustomerHistory;
         $cHistory->saveFromModel($model);
+
         $model->name = $request->name;
         $model->document = $request->document;
         $model->position = $request->position;
@@ -975,49 +990,119 @@ class CustomerController extends Controller
         $model->phone = $request->phone;
         $model->email = $request->email;
         $model->notes = $request->notes;
-        $model->count_empanadas = $request->count_empanadas;
+
+        $model->pathology = $request->pathology;
+        $model->hobbie = $request->hobbie;
+        $model->facebook_url = $request->facebook_url;
+        $model->instagram_url = $request->instagram_url;
+
+
         $model->phone2 = $request->phone2;
         $model->department = $request->department;
         $model->address = $request->address;
         $model->city = $request->city;
         $model->country = $request->country;
-        $model->technical_visit = $request->technical_visit;
         $model->bought_products = $request->bought_products;
-        $model->purchase_date = $request->purchase_date;
+        $model->total_sold = $request->total_sold;
+
         $model->user_id = $request->user_id;
         $model->source_id = $request->source_id;
         $model->status_id = $request->status_id;
-        //Agregamos el producto en edicion de prospecto
-        $model->product_id = $request->product_id;
+        $model->project_id = $request->project_id;
+        $model->birthday = $request->birthday;
+        $model->scoring = $request->scoring;
+        //$model->first_installment_date = $request->first_installment_date;
+
+
+        //$model->meta->gender_id = $request->meta_gender_id;
+
+
+
         //datos de contacto
         $model->contact_name = $request->contact_name;
         $model->contact_phone2 = $request->contact_phone2;
         $model->contact_email = $request->contact_email;
         $model->contact_position = $request->contact_position;
-        $model->product_id = $request->product_id;
-        $model->scoring_interest = $request->scoring_interest;
-        $model->scoring_profile = $request->scoring_profile;
-        $model->rd_public_url = $request->rd_public_url;
-        $model->empanadas_size = $request->empanadas_size;
-        $model->number_venues = $request->number_venues;
-        $model->maker = $request->maker;
-        $model->total_sold = $request->total_sold;
-        if (Auth::id())
-            $model->updated_user_id = Auth::id();
+
+        if (isset($request->meta_gender_id) && ($this->isValidMeta($request->meta_gender_id)))
+            $model->meta_gender_id = $request->meta_gender_id;
+        if (isset($request->meta_economic_activity_id) && ($this->isValidMeta($request->meta_economic_activity_id)))
+            $model->meta_economic_activity_id = $request->meta_economic_activity_id;
+        if (isset($request->meta_income_id) && ($this->isValidMeta($request->meta_income_id)))
+            $model->meta_income_id = $request->meta_income_id;
+        /*
+        if(isset($request->meta_investment_id)&& ($this->isValidMeta($request->meta_investment_id)))
+            $model->meta_investment_id = $request->meta_investment_id;
+        */
+
+
         if ($model->save()) {
-            return redirect('customers/' . $model->id . '/show')->with('statusone', 'El Cliente <strong>' . $model->name . '</strong> fué modificado con éxito!');
+            /*
+            $this->updateMetaDataFromSelect($model, 1, $request->meta_house_mates_id);
+            $this->updateMetaDataFromSelect($model, 2, $request->meta_funding_source_id);
+            $this->updateMetaDataFromSelect($model, 3, $request->meta_final_fundig_source_id);
+            */
+
+
+
+            return redirect('/customers/' . $id . '/show')->with('statusone', 'El Cliente <strong>' . $model->name . '</strong> fué modificado con éxito!');
         }
     }
-    public function updateAjaxStatus(Request $request)
+
+    public function storeActionText($customer_id, $action_id, $action_note)
     {
-        $model = Customer::find($request->customer_id);
+
+        $model = new Action;
+        $model->note = $action_note;
+        $model->type_id = $action_id;
+
+
+        $model->customer_id = $customer_id;
+
+        $model->save();
+
+        return back();
+    }
+
+    public function activate($id)
+    {
+        $model = Customer::find($id);
+
+
         $cHistory = new CustomerHistory;
         $cHistory->saveFromModel($model);
-        $model->status_id = $request->status_id;
-        $model->save();
-        return redirect()->back();
+
+        $model->status_id = 2; // seguimiento
+        if ($model->scoring == 0)
+            $model->scoring = 1;
+
+
+        if ($model->save()) {
+            $this->storeActionText($id, 4, 'Se activó desde un email');
+            return redirect('https://trujillogutierrez.com.co/');
+        }
+    }
+    
+    public function unsubscribe($id)
+    {
+        $model = Customer::find($id);
+
+
+        $cHistory = new CustomerHistory;
+        $cHistory->saveFromModel($model);
+
+        $model->status_id = 9; // descartado
+
+
+        if ($model->save()) {
+            $this->storeActionText($id, 4, 'Se dio de baja desde un email');
+            return redirect('https://trujillogutierrez.com.co/');
+        }
     }
     // Color
+
+
+
     public function filterCustomers($request)
     {
         return Customer::where(
@@ -1027,9 +1112,11 @@ class CustomerController extends Controller
             }
         )
             ->select(DB::raw('customers.*'))
+
             ->orderBy('customers.status_id', 'asc', 'created_at', 'asc')
             ->paginate(20);
     }
+
     function getStatusID($request, $stage_id)
     {
         $url = $request->fullurl();
@@ -1041,11 +1128,16 @@ class CustomerController extends Controller
             }
         }
         if (!count($res)) {
-            $model = $this->customerService->getCustomerWithParent($stage_id);
+
+            $model = CustomerStatus::where("stage_id", $stage_id)
+                ->orderBy("weight", "ASC")
+                ->get();
             //$model = CustomerStatus::all();
+
             foreach ($model as $item)
                 $res[] = $item->id;
         }
+
         return $res;
     }
     // Enviar email
@@ -1053,43 +1145,60 @@ class CustomerController extends Controller
     {
         $model = Email::find($id);
         $subjet = 'Gracias por escribirnos';
+
+
         Email::raw($model->body, function ($message) use ($user, $subjet) {
             $message->from('noresponder@mqe.com.co', 'Maquiempanadas');
+
             $message->to($user->email, $user->user_name)->subject($subjet);
         });
     }
+
     public function mail($cui)
     {
         //$model = Email::find(1);
         $customer = Customer::find($cui);
         $subjet = 'Bro';
+
         //dd($customer);
         /*
     Mail::raw($model->body, function ($message) use ($customer, $subjet){
         $message->from('noresponder@mqe.com.co', 'Maquiempanadas');
+
         $message->to($customer->email, $customer->user_name)->subject($subjet);   
     });
 */
+
         $emailcontent = array(
             'subject' => 'Gracias por contactarme',
             'emailmessage' => 'Este es el contenido',
             'customer_id' => $cui
         );
+
         //dd($emailcontent);
         // Mail::send('emails.brochure', $emailcontent, function ($message) use ($customer){
+
         //         $message->subject('MQE');
+
         //         $message->to('nicolas@myseocompany.co');
+
         //     });
+
+
     }
-    function getAllStatusID($stage_id)
+
+    function getAllStatusID()
     {
+
         $res = array();
-        $model = $this->customerService->getCustomerWithParent($stage_id);
+        $model = CustomerStatus::orderBy("weight", "ASC")->get();
         //$model = CustomerStatus::all();
+
         foreach ($model as $item)
             $res[] = $item->id;
         return $res;
     }
+
     /**
      * Remove the specified resource from storage.
      *
@@ -1099,63 +1208,52 @@ class CustomerController extends Controller
     public function destroy($id)
     {
         $model = Customer::find($id);
+        $model->actions()->delete();
+
         if ($model->delete()) {
+
             return redirect('customers')->with('statustwo', 'El Cliente <strong>' . $model->name . '</strong> fué eliminado con éxito!');
         }
     }
+
     public function saveAPICustomer($request)
     {
-        //dd($request);
+
         $model = new Customer;
-        $model->name = $request->name;
-        $model->phone = $request->phone;
-        $model->phone2 = $request->phone2;
-        $model->email = $request->email;
-        $model->country = $request->country;
-        $model->city = $request->city;
+        $model->name        = $request->name;
+        $model->phone       = $request->phone;
+        $model->phone2      = $request->phone2;
+        $model->email       = $request->email;
+        $model->country     = $request->country;
+        $model->city        = $request->city;
+        $model->project_id  = $request->project_id;
+        if (is_int($model->source_id))
+            $model->source_id  = $request->source_id;
 
-        $model->department = $request->department;
-        $model->company_type = $request->company_type;
+        if (isset($request->platform) && ($request->platform == 'fb'))
+            $model->source_id = 6;
+        elseif (isset($request->platform) && ($request->platform == 'ig'))
+            $model->source_id = 40;
 
-        $model->business = $request->business;
-        $model->notes = $request->notes . ' ' . $request->email;
-        if (isset($request->count_empanadas))
-            $model->count_empanadas = $request->count_empanadas;
-        $model->bought_products = $request->product;
+
+        $model->notes       = $request->notes . ' ' . $request->email;
+
+
+        $model->bought_products = $request->bought_products;
         $model->cid = $request->cid;
         $model->src = $request->src;
+        $model->department = $request->department;
+        $model->status_id = 1;
 
 
-        if (isset($request->status) && ($request->status == 'Escuela'))
-            $model->status_id = 22;
-        else
-            $model->status_id = 1;
-        $model->source_id = 0;
-        if (isset($request->campaign) && ($request->campaign == 'Facebook'))
-            $model->source_id = 17;
-        elseif (isset($request->campaign) && ($request->campaign == 'NewJersey'))
-            $model->source_id = 19;
-        elseif (isset($request->campaign) && ($request->campaign == 'USA'))
-            $model->source_id = 16;
-        elseif (isset($request->campaign) && ($request->campaign == '500'))
-            $model->source_id = 15;
-        elseif (isset($request->campaign) && ($request->campaign == 'Facebook New Jersey'))
-            $model->source_id = 22;
-        elseif (isset($request->campaign) && ($request->campaign == 'Leads Black Friday 2018'))
-            $model->source_id = 24;
-        elseif (isset($request->campaign) && ($request->campaign == 'Landing Desmechadora'))
-            $model->source_id = 28;
-        elseif (isset($request->campaign) && ($request->campaign == 'Landing Bogota'))
-            $model->source_id = 30;
-        elseif (isset($request->campaign) && ($request->campaign == 'Landing Promo Navideña'))
-            $model->source_id = 32;
-        elseif (isset($request->platform) && ($request->platform == 'fb'))
-            $model->source_id = 17;
-        elseif (isset($request->platform) && ($request->platform == 'ig'))
-            $model->source_id = 31;
+
         $model->save();
+
         return $model;
     }
+
+
+
     public function isEqual($request)
     {
         $model = Customer::where(
@@ -1163,22 +1261,31 @@ class CustomerController extends Controller
             function ($query) use ($request) {
                 if (isset($request->user_id)  && ($request->user_id != null))
                     $query = $query->where('user_id', $request->user_id);
+
                 if (isset($request->source_id)  && ($request->source_id != null))
                     $query = $query->where('source_id', $request->source_id);
+
                 if (isset($request->status_id)  && ($request->status_id != null))
                     $query = $query->where('status_id', $request->status_id);
+
                 if (isset($request->business)  && ($request->business != null))
                     $query = $query->where('business', $request->business);
+
                 if (isset($request->phone)  && ($request->phone != null))
                     $query = $query->where('phone', $request->phone);
+
                 if (isset($request->email)  && ($request->email != null))
-                    $query = $query->whereRaw('lower(email) = lower("' . $request->email . '")');
+                    $query = $query->where('email', $request->email);
+
                 if (isset($request->phone2)  && ($request->phone2 != null))
                     $query = $query->where('phone2', $request->phone2);
+
                 if (isset($request->notes)  && ($request->notes != null))
                     $query = $query->where('notes', $request->notes);
+
                 if (isset($request->city)  && ($request->city != null))
                     $query = $query->where('city', $request->city);
+
                 if (isset($request->country)  && ($request->country != null))
                     $query = $query->where('country', $request->country);
             }
@@ -1186,61 +1293,158 @@ class CustomerController extends Controller
             ->count();
         return $model;
     }
+
     public function getSimilar($request)
     {
-        $model = Customer::where(
-            // Búsqueda por...
-            function ($query) use ($request) {
-                if (isset($request->phone)  && ($request->phone != null) && ($request->phone != 'NA'))
-                    $query->orwhere('phone', $request->phone);
-                if (isset($request->phone)  && ($request->phone != null) && ($request->phone != 'NA'))
-                    $query->orwhere('phone2', $request->phone);
-                if (isset($request->phone2)  && ($request->phone2 != null) && ($request->phone != 'NA'))
-                    $query->orwhere('phone', $request->phone2);
-                if (isset($request->phone2)  && ($request->phone2 != null) && ($request->phone != 'NA'))
-                    $query->orwhere('phone2', $request->phone2);
-                if (isset($request->email)  && ($request->email != null))
-                    //$query->orWhereRaw('lower(email) = lower("'.$request->email.'")');
-                    $query->orWhere('email', strtolower($request->email));
-                //$query->orWhereRaw('email', strtolower($request->email));
-            }
-        )
-            ->get();
-        //dd($model);
+        if (
+            (isset($request->phone)  && ($request->phone != null)) ||
+            (isset($request->phone2)  && ($request->phone2 != null)) ||
+            (isset($request->email)  && ($request->email != null)) ||
+            (isset($request->document) && ($request->document != null))
+        ) {
+            $model = Customer::where(
+                // Búsqueda por...
+                function ($query) use ($request) {
+                    if (isset($request->phone)  && ($request->phone != null))
+                        $query->orwhere('phone', $request->phone);
+                    if (isset($request->phone)  && ($request->phone != null))
+                        $query->orwhere('phone2', $request->phone);
+
+                    if (isset($request->phone2)  && ($request->phone2 != null))
+                        $query->orwhere('phone', $request->phone2);
+                    if (isset($request->phone2)  && ($request->phone2 != null))
+                        $query->orwhere('phone2', $request->phone2);
+
+                    if (isset($request->email)  && ($request->email != null))
+                        $query->orwhere('email', $request->email);
+
+
+                    if (isset($request->document)  && ($request->document != null))
+                        $query->orwhere('document', $request->document);
+                }
+            )
+                ->get();
+        } else {
+            $model = null;
+        }
+
         return $model;
     }
+
+    public function getEmailByProjectId($project_id)
+    {
+
+        $project_id_laquinta = '1';
+        $project_id_torres = '2';
+
+
+        $email_id_laquinta = 2;
+        $email_id_torres = 4;
+
+        $email_id = 0;
+
+
+        switch ($project_id) {
+            case $project_id_laquinta:
+                $email_id = $email_id_laquinta;
+                break;
+            case $project_id_torres:
+                $email_id = $email_id_torres;
+                break;
+        }
+
+        return $email_id;
+    }
+
+    public function sendWelcomeMail($customer)
+    {
+        $email_id = $this->getEmailByProjectId($customer->project_id);
+
+
+        if ($email_id != 0) {
+            $email = Email::find($email_id);
+            // $email, $user, $count, $sended_at
+            Email::addEmailQueue($email, $customer, 0, Carbon\Carbon::now());
+            $this->storeEmailAction($email, $customer, "Correo automático de bienvenida");
+        }
+    }
+
+    public function redirectingPage1()
+    {
+
+        return redirect('https://trujillogutierrez.com.co/site/gracias-la-quinta.html');
+    }
+
+    public function redirectingPage2()
+    {
+
+        return redirect('https://trujillogutierrez.com.co/site/gracias-torres-del-bosque.html');
+    }
+
     public function saveAPI(Request $request)
     {
-        // vericamos que no se inserte 2 veces
+
+        //Customer::create($request->all());
         $count = $this->isEqual($request);
+
         if (is_null($count) || ($count == 0)) {
-            // verificamos uno similar
             $similar = $this->getSimilar($request);
+
+
             if ($similar->count() == 0) {
+
                 $model = $this->saveAPICustomer($request);
-                $email = Email::find(1);
-                $source = CustomerSource::find($model->source_id);
-                Email::addEmailQueue($email, $model, 10, null);
-                if (isset($source))
-                    return redirect('https://maquiempanadas.com/es/' . $source->redirect_url);
-                else
-                    return redirect('https://maquiempanadas.com/es/gracias-web');
+
+                $this->sendWelcomeMail($model);
+                if ($request->project_id == '1') {
+                    return $this->redirectingPage1();
+                } else {
+                    return $this->redirectingPage2();
+                }
             }
             // este cliente ya existe. Se agrega una nueva nota
             else {
+
                 $model = $similar[0];
+
+
                 $this->storeActionAPI($request, $model->id);
                 $this->updateCreateDate($request, $model->id);
-                return redirect('https://maquiempanadas.com/es/gracias-web');
-                //return redirect('https://maquiempanadas.com/es/gracias-web/');
-                //echo "similard";
+                if ($request->project_id == '1') {
+                    return $this->redirectingPage1();
+                } else {
+                    return $this->redirectingPage2();
+                }
             }
         } else {
+
+
+            $similar = $this->getSimilar($request);
+
+
+            $model = $similar[0];
+
+
+            $this->storeActionAPI($request, $model->id);
+            $this->updateCreateDate($request, $model->id);
+            if ($request->project_id == '1') {
+                return $this->redirectingPage1();
+            } else {
+                return $this->redirectingPage2();
+            }
+        }
+        if ($request->project_id == '1') {
+            return $this->redirectingPage1();
+        } else {
+            return $this->redirectingPage2();
         }
     }
+
     public function storeActionAPI(Request $request, $customer_id)
     {
+
         $model = new Action;
+
         $str = "";
         if (isset($request->phone))
             $str .= " telefono1:" . $request->phone;
@@ -1252,422 +1456,175 @@ class CustomerController extends Controller
             $str .= " ciudad:" . $request->city;
         if (isset($request->country))
             $str .= " pais:" . $request->country;
+
         if (isset($request->name))
             $str .= " Nombre:" . $request->name;
+
         $model->note = $request->notes . $str;
         $model->type_id = 16; // actualización
+
+
         $model->customer_id = $customer_id;
+
         $model->save();
+
         return back();
     }
+
+
     public function updateCreateDate(Request $request, $customer_id)
     {
+
         $customer = Customer::find($customer_id);
         $model = new Action;
+
+
         $model->note = "se actualizó la fecha de creación " . $customer->created_at;
         $model->type_id = 16; // actualización
         $model->customer_id = $customer_id;
         $model->save();
+
+
         $mytime = Carbon\Carbon::now();
         $customer->created_at = $mytime->toDateTimeString();
-        $customer->status_id = 19;
+        $customer->status_id = 1;
         $customer->save();
+
+
         return back();
     }
-    public function storeAction(Request $request)
+
+    public function storeEmailAction($mail, $customer, $note)
     {
-        //dd($request);
-        $date_programed = Carbon\Carbon::parse($request->date_programed);
         $today = Carbon\Carbon::now();
-        //dd($request);
-        $customer = Customer::find($request->customer_id);
-        if (is_null($request->type_id)) {
-            return back()->with('statustwo', 'El Cliente <strong>' . $customer->name . '</strong> no fue modificado!');
-        }
+        // envio mail
+        $action_type_id = 2;
+
         $model = new Action;
-        if (isset($request->ActionProgrameId)) {
-            $ActionProgramed = Action::find($request->ActionProgrameId);
-            $ActionProgramed->delivery_date = $today;
-            $ActionProgramed->save();
-            $model->note = $request->note . "//" . $ActionProgramed->note;
-        } else {
-            $model->note = $request->note;
-        }
-        $model->type_id = $request->type_id;
-        $model->creator_user_id = Auth::id();
-        $model->customer_owner_id = $customer->user_id;
-        $model->customer_createad_at = $customer->created_at;
-        $model->customer_updated_at = $customer->updated_at;
-        $model->customer_id = $request->customer_id;
-        if ($date_programed->gt($today)) {
-            $model->due_date = $date_programed;
-        }
+
+        $model->note = $note;
+        $model->type_id = $action_type_id;
+        $model->creator_user_id = 0;
+        $model->customer_id = $customer->id;
+
+
+        $model->delivery_date = $today;
         $model->save();
+    }
+
+    public function changeCustomerStatus($request, $customer)
+    {
         if (!is_null($request->status_id)) {
             $cHistory = new CustomerHistory;
             $cHistory->saveFromModel($customer);
             $customer->status_id = $request->status_id;
-            if (Auth::id())
-                $customer->updated_user_id = Auth::id();
             $customer->save();
         }
-        if (!is_null($request->file)) {
-            $file     = $request->file('file');
-            $path = $file->getClientOriginalName();
-            $destinationPath = 'public/files/' . $request->customer_id;
-            $file->move($destinationPath, $path);
-            $model = new CustomerFile;
-            $model->customer_id = $request->customer_id;
-            $model->url = $path;
-            $model->save();
-            return back();
+    }
+
+    public function changeCustomerScoring($request, $customer)
+    {
+        if (!is_null($request->scoring)) {
+            $cHistory = new CustomerHistory;
+            $cHistory->saveFromModel($customer);
+            $customer->scoring = $request->scoring;
+            $customer->save();
         }
+    }
+
+    public function createNewAction($request)
+    {
+        $due_date = Carbon\Carbon::parse($request->due_date);
+
+        $model = new Action;
+
+        $model->type_id = $request->type_id;
+        $model->creator_user_id = Auth::id();
+        $model->customer_id = $request->customer_id;
+        $model->note = $request->note;
+
+        if (isset($request->due_date) && ($request->due_date != "")) {
+            $model->due_date = $due_date;
+        }
+        $model->save();
+    }
+
+    public function updateAction($request)
+    {
+        $today = Carbon\Carbon::now();
+
+        $model = Action::find($request->pending_action_id);
+
+        $model->type_id = $request->type_id;
+        $model->creator_user_id = Auth::id();
+        //$model->customer_id = $request->customer_id;
+        $model->note = $model->note . " / " . $request->note;
+        $model->delivery_date = $today;
+        $model->save();
+    }
+    public function storeAction(Request $request)
+    {
+        //dd($today);
+        $customer = Customer::find($request->customer_id);
+        if (is_null($request->type_id)) {
+            return back()->with('statustwo', 'El Cliente <strong>' . $customer->name . '</strong> no fue modificado!');
+        }
+        if (!isset($request->pending_action_id))
+            $this->createNewAction($request);
+        else
+            $this->updateAction($request);
+
+        $this->changeCustomerStatus($request, $customer);
+
+        $this->changeCustomerScoring($request, $customer);
+
+
         return redirect('/customers/' . $request->customer_id . '/show')->with('statusone', 'El Cliente <strong>' . $customer->name . '</strong> fué modificado con éxito!');
     }
-    public function saleAction(Request $request)
-    {
-        $model = new Action();
-        $model->type_id = 27;
-        $model->sale_date = $request->sale_date;
-        $model->sale_amount = $request->sale_amount;
-        $model->customer_id = $request->customer_id;
-        $model->creator_user_id = Auth::id();
-        if ($request->machine == "on") {
-            $model->note = "Venta de máquina";
-        } else {
-            $model->note = "No es una máquina";
-        }
-        $model->save();
-        return redirect()->back();
-    }
-    public function opportunityAction(Request $request)
-    {
-        $action = new Action;
-        $action->object_id = $request->id;
-        $action->type_id = 28;
-        $action->creator_user_id = Auth::id();
-        $action->customer_id = $request->customer_id;
-        $action->save();
-        return redirect()->back();
-    }
-    public function poorlyRatedAction(Request $request)
-    {
-        $action = new Action;
-        $action->object_id = $request->id;
-        $action->type_id = 32;
-        $action->creator_user_id = Auth::id();
-        $action->customer_id = $request->customer_id;
-        $action->save();
-        /*$customer = Customer::find($request->customer_id);
-    $customer->status_id = 53;
-    $customer->save();*/
-        return redirect()->back();;
-    }
-    public function pqrAction(Request $request)
-    {
-        $model = new Action();
-        $model->type_id = 29;
-        $model->created_at = $request->created_at;
-        $model->note = $request->note;
-        $model->customer_id = $request->customer_id;
-        $model->creator_user_id = Auth::id();
-        $model->save();
-        $customer =  Customer::find($request->customer_id);
-        $cHistory = new CustomerHistory;
-        $cHistory->saveFromModel($customer);
-        $customer->status_id = 29;
-        if (Auth::id())
-            $customer->updated_user_id = Auth::id();
-        $customer->save();
-        return redirect()->back();
-    }
-    public function spareAction(Request $request)
-    {
-        $model = new Action();
-        $model->type_id = 30;
-        $model->delivery_date = $request->delivery_date;
-        $model->note = $request->note;
-        $model->customer_id = $request->customer_id;
-        $model->creator_user_id = Auth::id();
-        $model->save();
-        $customer =  Customer::find($request->customer_id);
-        $cHistory = new CustomerHistory;
-        $cHistory->saveFromModel($customer);
-        $customer->status_id = 46;
-        if (Auth::id())
-            $customer->updated_user_id = Auth::id();
-        $customer->save();
-        return redirect()->back();
-    }
-    public function enviarCorreo()
-    {
-        $destinatario = 'mateogiraldo420@gmail.com';
-        $mensaje = 'Este es el contenido del correo';
-        //Mail::to($destinatario)->send(new DemoEmail($mensaje));
-        return "Correo enviado correctamente";
-    }
+
     public function storeMail(Request $request)
     {
-        $this->enviarCorreo();
         $customer = Customer::find($request->customer_id);
         $email = Email::find($request->email_id);
-        $emailcontent = array(
-            'subject' => $email->subject,
-            'emailmessage' => 'Este es el contenido',
-            'customer_id' => $customer->id,
-            'email_id' => $email->id,
-            'customer_mail' => $customer->email,
-            'name' => $customer->name,
-        );
-        Mail::send($email->view, $emailcontent, function ($message) use ($customer, $email) {
-            $message->subject($email->subject);
-            $message->to($customer->email);
-        });
-        if (filter_var($customer->email, FILTER_VALIDATE_EMAIL)) {
-            // La dirección de correo electrónico es válida, puedes enviar el correo
-            Mail::send($email->view, $emailcontent, function ($message) use ($customer, $email) {
-                $message->subject($email->subject);
-                $message->to($customer->email);
-            });
+
+        $count = Email::sendUserEmail($request->customer_id, $email->subject, $email->view, $email->id);
+        if ($count > 0) {
+            Action::saveActionManually($request->customer_id, $request->email_id, 5);
         } else {
-            // La dirección de correo electrónico no es válida, muestra un mensaje de error o realiza alguna otra acción
-            dd("direccion invalida");
+            Action::saveActionManually($request->customer_id, $request->email_id, 2);
         }
-        /*  
-Mail::send($email->view, $emailcontent, function ($message) use ($customer, $email){
-$message->subject($email->subject);
-$message->to("mateogiraldo420@gmail.com");
-});*/
+
+        //Email::addEmailQueue($email, $customer, 0, Carbon\Carbon::now());
+        /*
+	    $emailcontent = array (
+			'subject' => $email->subject,
+			'emailmessage' => 'Este es el contenido',
+			'customer_id' => $model->id,
+			'email_id' => $email->id,
+            'model' => $model,
+			 );
+        
+        Mail::send($email->view, $emailcontent, function ($message) use ($model, $email){
+                    $message->subject($email->subject);
+                    $message->to($model->email);
+            });
+        */
         //Action::saveAction($customer->id,$email->id, 2);
-        $action = new Action;
-        $action->object_id = $email->id;
-        $action->type_id = 2;
-        $action->creator_user_id = Auth::id();
-        $action->customer_id = $request->customer_id;
-        $action->save();
         return back();
     }
+
     public function change_status(Request $request)
     {
-        $statuses = $this->getStatuses($request, 2);
-        $model = $this->customerService->filterCustomers($request, $statuses, 1);
-        //$model = $this->customerService->filterModelFull($request, $statuses);
-        
+
+
+        $statuses = $this->getStatuses($request, 0);
+        $model = $this->filterModelFull($request, $statuses, 5000000);
+
+        // cada registro se le actualiza el estado
         foreach ($model as $item) {
             $item->status_id = $request->modal_status_id;
             $item->save();
         }
         return redirect()->back();
-    }
-    public function excel(Request $request)
-    {
-        $name = $this->getUsers();
-        $users = $this->getUsers($request);
-        $customer_options = CustomerStatus::all();
-        $statuses = $this->getStatuses($request, 1);
-
-        /* obtiene una lista de clientes a partir del request */
-        //$model = $this->customerService->filterModelFull($request, $statuses);
-        $model = $this->customerService->filterCustomers($request, $statuses, 1);
-        // dd($statuses, $model)
-
-
-        $customersGroup = $this->customerService->countFilterCustomers($request, $statuses, 1);
-        $sources = CustomerSource::all();
-
-        return view('customers.excel', compact('model', 'request', 'customer_options', 'customersGroup', 'users', 'sources'));
-    }
-    public function contact()
-    {
-        $customers = DB::table('customers')
-            ->join('audience_customer', 'audience_customer.customer_id', 'customers.id')
-            ->join('audiences', 'audiences.id', 'audience_customer.audience_id')
-            ->select('customers.*')
-            ->where('audiences.id', 6)
-            ->where('customers.created_at', '>', '2020-01-01')
-            ->get();
-        return view('users.encuesta', compact('customers'));
-    }
-    public function contactId($id)
-    {
-        $customers = Customer::find($id);
-        return view('users.encuesta_id', compact('customers'));
-    }
-    public function savePoll($id, Request $request)
-    {
-        //dd($request->suggestions);
-        $customer = Customer::find($id);
-        $customer->name = $request->name;
-        $customer->email = $request->email;
-        $customer->business = $request->business;
-        $customer->position = $request->position;
-        $customer->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->number_employees = $request->number_employees;
-        $meta_data->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->customer_meta_data_type_id = $request->empanadas;
-        $meta_data->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->customer_meta_data_type_id = 78;
-        $meta_data->value = $request->quality;
-        $meta_data->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->customer_meta_data_type_id = 79;
-        $meta_data->value = $request->confort;
-        $meta_data->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->customer_meta_data_type_id = 80;
-        $meta_data->value = $request->security;
-        $meta_data->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->customer_meta_data_type_id = 81;
-        $meta_data->value = $request->delivery_time;
-        $meta_data->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->customer_meta_data_type_id = 82;
-        $meta_data->value = $request->atention;
-        $meta_data->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->customer_meta_data_type_id = 83;
-        $meta_data->value = $request->responsive_time_personal;
-        $meta_data->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->customer_meta_data_type_id = 84;
-        $meta_data->value = $request->atention_technical_support;
-        $meta_data->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->customer_meta_data_type_id = 85;
-        $meta_data->value = $request->quality_technical_support;
-        $meta_data->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->customer_meta_data_type_id = 86;
-        $meta_data->value = $request->satisfaction_level;
-        $meta_data->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->customer_meta_data_type_id = 87;
-        $meta_data->value = $request->recommendation;
-        $meta_data->save();
-        $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id;
-        $meta_data->customer_meta_data_type_id = 88;
-        $meta_data->value = $request->suggestions;
-        $meta_data->save();
-        redirect("http://mqe.myseotest.com.co/contact");
-    }
-    public function storeAudience(Request $request)
-    {
-        $model = new AudienceCustomer;
-        $model->customer_id = $request->customer_id;
-        $model->audience_id = $request->audience_id;
-        $model->save();
-        return redirect()->back();
-    }
-    public function sendToRDStationFromCRM($customer)
-    {
-        $model = new RdStation;
-        $model->setName("");
-        $model->setPersonalPhone("");
-        $model->setEmail("");
-        $model->setCountry("");
-        $model->setTrafficMedium("");
-        //dd($customer);
-        if (isset($customer->source_id)) {
-            $customer_source = CustomerSource::find($customer->source_id);
-            if ($customer_source) {
-                $model->setTrafficMedium($customer_source->name);
-            }
-        }
-        if (isset($customer->name))
-            $model->setName($customer->name);
-        if (isset($customer->phone))
-            $model->setPersonalPhone($customer->phone);
-        if (isset($customer->email))
-            $model->setEmail($customer->email);
-        if (isset($customer->country))
-            $model->setCountry($customer->country);
-        $data = array(
-            'event_type' => 'CONVERSION',
-            'event_family' => 'CDP',
-            'payload' =>
-            array(
-                'conversion_identifier' => 'Crm',
-                'name' => $model->getName(),
-                'email' => $model->getEmail(),
-                'country' => $model->getCountry(),
-                'personal_phone' => $model->getPersonalPhone(),
-                'mobile_phone' => $model->getPersonalPhone(),
-                'traffic_source' => 'others',
-                'traffic_medium' => $model->getTrafficMedium(),
-                'open_country' => $model->getCountry(),
-                'available_for_mailing' => true,
-                'legal_bases' =>
-                array(
-                    0 =>
-                    array(
-                        'category' => 'communications',
-                        'type' => 'consent',
-                        'status' => 'granted',
-                    ),
-                ),
-            ),
-        );
-        $model->sendFromCrm($data);
-    }
-    public function daily(Request $request)
-    {
-        $menu = $this->customerService->getUserMenu(Auth::user(1));
-        $pid = 1;
-        session(['stage_id' => $pid]);
-        $users = $this->getUsers();
-        $pid = 1;
-        $customer_options = CustomerStatus::where('stage_id', $pid)->orderBy("weight", "ASC")->get();
-        $statuses = $this->getStatuses($request, $pid);
-        $model = $this->customerService->getModelPhase($request, $statuses, $pid);
-        $customersGroup = $this->customerService->countFilterCustomers($request, $statuses, $pid);
-        $pending_actions = $this->getPendingActions();
-        $phase = CustomerStatusPhase::find($pid);
-        $sources = CustomerSource::all();
-        $products = Product::all();
-        $scoring_interest = $this->getInterestOptions($request);
-        $scoring_profile = $this->getProfileOptions($request);
-        $customer = null;
-        $id = 0;
-        if ($model && isset($model[0])) {
-            //dd($model);
-            $customer = $model[0];
-            $id = $customer->id;
-        }
-        if (isset($request->customer_id)) {
-            $customer = Customer::find($request->customer_id);
-            $id = $request->customer_id;
-        }
-        //dd($model->scoring_profile);
-        $actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
-        $action_options = ActionType::orderby('weigth')->get();
-        $histories = CustomerHistory::where('customer_id', '=', $id)->get();
-        $email_options = Email::where('type_id', '=', 1)->where('active', '=', '1')->get();
-        $statuses_options = CustomerStatus::where('stage_id', $pid)->orderBy("weight", "ASC")->get();
-        $actual = true;
-        $today = Carbon\Carbon::now();
-        $audiences = Audience::all();
-        $model->action = "reports/views/daily_customers_followup";
-        $references = null;
-        if ($customer != null) {
-            $references = Reference::where('customer_id', '=', $customer->id)->orderby("created_at", "DESC")->get();
-        }
-        return view('customers.daily', compact('model', 'request', 'customer_options', 'customersGroup', 'users', 'sources', 'pending_actions', 'products', 'statuses', 'scoring_interest', 'scoring_profile', 'customer', 'histories', 'actions', 'action_options', 'email_options', 'statuses_options', 'actual', 'today', 'audiences', 'references', 'phase', 'menu'));
     }
 }
