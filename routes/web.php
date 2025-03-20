@@ -27,6 +27,8 @@ use App\Http\Controllers\AudienceController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CustomerUnsubscribesController;
+use App\Http\Controllers\BIController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
@@ -140,6 +142,7 @@ Route::middleware('auth')->prefix('api')->group(function () {
     Route::post('/customers/saveCustomer', [APIController::class, 'saveApiWatoolbox']);
     
     Route::get('/customers/saveCheckout', [APIController::class, 'saveApiCheckout']);
+    
     Route::get('/products/{id}/get', [APIController::class, 'getProduct']);
     Route::get('/products/get', [APIController::class, 'getProducts']);
     Route::get('/rd/saveCustomer', [APIController::class, 'saveFromRD']);
@@ -151,6 +154,7 @@ Route::middleware('auth')->prefix('api')->group(function () {
     Route::get('/update_lead_score', [APIController::class, 'saveFromRD2']);
     Route::post('/update_lead_score', [APIController::class, 'saveFromRD2']);
 });
+Route::get('/products/{id}/show', [ProductController::class, 'show']);
 Route::get('api/customers/saveCustomer', [APIController::class, 'saveApi'])->withoutMiddleware(['auth']);
 Route::post('api/customers/update', [APIController::class, 'updateFromRD'])->withoutMiddleware(['auth'])->name('updateRD');
 
@@ -359,6 +363,17 @@ Route::get('/watoolbox/test', function(){
 
     return view('test');
 });
+
+Route::get( '/bi/newcustomers', [BIController::class, 'newcustomers']);
+Route::get( '/bi/purchasefrequency', [BIController::class, 'purchasefrequency']);
+Route::get( '/bi/averageTicket', [BIController::class, 'averageTicket']);
+
+Route::get('/customers_unsubscribe', [CustomerUnsubscribesController::class, 'index']);
+Route::post('/customers_unsubscribe', [CustomerUnsubscribesController::class, 'save']);
+Route::get('/customers_unsubscribe/{id}/destroy', [CustomerUnsubscribesController::class, 'destroy']);
+Route::get('/customers_unsubscribe/{id}/edit', [CustomerUnsubscribesController::class, 'edit']);
+Route::post('/customers_unsubscribe/{id}/update', [CustomerUnsubscribesController::class, 'update']);
+
 
 
 Route::get('/reset_password', function(){

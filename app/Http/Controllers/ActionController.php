@@ -80,7 +80,7 @@ class ActionController extends Controller
 		$model = $this->filterModel($request);
 		$users = User::where('status_id' , '=' , 1)
 			->get();
-		$action_options = ActionType::orderBy('weigth')->get();
+		$action_options = ActionType::orderBy('weight')->get();
 
 
 		return view('actions.index', compact('model','users', 'action_options','request'));
@@ -117,7 +117,7 @@ class ActionController extends Controller
             ->get();
 
             //dd($model);
-        $action_options = ActionType::orderBy('weigth')->get();   
+        $action_options = ActionType::orderBy('weight')->get();   
 
 
 

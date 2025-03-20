@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\CustomerUnsubscribe;
+use App\Models\CustomerUnsubscribe;
 use Illuminate\Http\Request;
 
 

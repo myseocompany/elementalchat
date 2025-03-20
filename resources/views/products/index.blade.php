@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>{{App\ProductType::getName($request->type_id)}}</h1>
+    <h1>{{App\Models\ProductType::getName($request->type_id)}}</h1>
     <div><a href="/products/create">Crear producto</a></div>
     <!-- Formulario de búsqueda por nombre -->
     <div class="mb-3">
@@ -27,7 +27,7 @@
                         </div>
                         @endif
                         <h4>{{$item->name}}</h4>
-                        <div>$ {{number_format($item->price, 0)}}</div>
+                        <div>${{number_format($item->price, 0)}}</div>
                         @if($item->quantity > 1)
                         <div>{{$item->quantity}} unidades disponibles</div>
                         @else
@@ -78,7 +78,7 @@
                     <td class="product-name">
                         <a href="/products/{{$item->id}}/show">{{$item->name}}</a>
                     </td>
-                    <td>$ {{number_format($item->price, 0)}}</td>
+                    <td>${{number_format($item->price, 0)}}</td>
                     <td>@if(isset($item->type)){{$item->type->name}}@endif</td>
                     <td>@if(isset($item->category)){{$item->category->description}}@endif</td>
                     <td>

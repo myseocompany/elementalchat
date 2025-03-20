@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Auth;
 // use Laravel\Scout\Searchable;
+
 
 class Action extends Model
 {
@@ -14,8 +16,12 @@ class Action extends Model
     }
 
     public function customer(){
-        return $this->belongsTo('App\Models\Customer', 'customer_id');
+        return $this->belongsTo('App\Models\Customer');
     }
+    public function OrderProduct(){
+        return $this->belongsTo('App\Models\OrderProduct');
+    }
+
     public function creator(){
         return $this->belongsTo('App\Models\User','creator_user_id');
     }
@@ -72,7 +78,26 @@ class Action extends Model
         
 	}
 
-    public function user(){
-        return $this->belongsTo('App\Models\User');
+    public static function saveActionManually($uid, $eid, $aid){
+        $model = new Action;
+        $model->customer_id = $uid;
+        $model->object_id = $eid;
+        $model->type_id = $aid;
+        date_default_timezone_set('America/Bogota');
+        $date = date('Y-m-d H:i:s');
+        $model->delivery_date= $date;
+
+        $model->creator_user_id = Auth::id();
+        $model->save();
     }
+
+    public function isPending() {
+        $isPending = false;
+        if (!is_null($this->due_date) && is_null($this->delivery_date)) {
+            $isPending = true;
+        }
+        return $isPending;
+    }
+    
+
 }

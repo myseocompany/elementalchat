@@ -46,7 +46,7 @@
   | <a href="/leads/daily_birthday{{ requestToStr($request) }}">Cumpleaños del dia</a> 
   | <a href="/leads/monthly_birthday">Cumpleaños del mes</a> 
   | <a href="/leads/excel{{ requestToStr($request) }}">Excel</a> 
-  | <a href="/customer_unsubscribes">Desuscribir</a>
+  | <a href="/customers_unsubscribe">Desuscribir</a>
   | <a href="#" data-toggle="modal" data-target="#miModal">Cambiar Estado</a> 
 </div>
 

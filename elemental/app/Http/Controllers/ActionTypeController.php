@@ -16,11 +16,7 @@ use App\ActionType;
 
 class ActionTypeController extends Controller
 {
-    
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
+
 
     public function show($id)
     {
@@ -70,11 +66,11 @@ class ActionTypeController extends Controller
 
         if($id == 9){
             $model = ActionType::where('status_id', $id)
-                ->orderBy('weigth', 'ASC')
+                ->orderBy('weight', 'ASC')
                 ->get();
         }else{
             $model = ActionType::whereNull('status_id')
-            ->orderBy('weigth', 'ASC')
+            ->orderBy('weight', 'ASC')
                 ->get();
         }
         

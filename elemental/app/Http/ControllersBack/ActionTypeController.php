@@ -70,11 +70,11 @@ class ActionTypeController extends Controller
 
         if($id == 9){
             $model = ActionType::where('status_id', $id)
-                ->orderBy('weigth', 'ASC')
+                ->orderBy('weight', 'ASC')
                 ->get();
         }else{
             $model = ActionType::whereNull('status_id')
-            ->orderBy('weigth', 'ASC')
+            ->orderBy('weight', 'ASC')
                 ->get();
         }
         
