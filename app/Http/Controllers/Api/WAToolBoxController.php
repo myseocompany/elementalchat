@@ -55,7 +55,7 @@ class WAToolBoxController extends Controller{
         // Identificar el Message Source
         $messageSource = MessageSource::where('APIKEY', $validatedData['APIKEY'])->first();
         if (!$messageSource) {
-            Log::info('MessageSource. Error Fuente del mensaje no encontrada');
+            Log::info('MessageSource. Error Fuente del mensaje no encontrada', [$validatedData['APIKEY']]);
             return response()->json(['message' => 'Fuente del mensaje no encontrada'], 404);
         }else{
             Log::info('MessageSource. Fuente del mensaje encontrada');
