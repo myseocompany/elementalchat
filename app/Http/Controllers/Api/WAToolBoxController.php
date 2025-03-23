@@ -62,35 +62,47 @@ class WAToolBoxController extends Controller{
         }
         $reciver_phone = $messageSource->settings['phone_number']; // 57300...
 
+        // inicio de guardar imagen
         $sender = Customer::firstOrNew(['phone' => $validatedData['phone']]);
+$isNewCustomer = !$sender->exists;
 
-        $isNewCustomer = !$sender->exists;
-        
-        if ($isNewCustomer) {
-            $sender->name = $validatedData['name'] ?? $validatedData['name2'];
+if ($isNewCustomer) {
+    $sender->name = $validatedData['name'] ?? $validatedData['name2'];
+}
+
+// Guardar imagen solo si no existe o si es nueva
+if (isset($validatedData['image']) && !empty($validatedData['image'])) {
+    $currentImage = $sender->image_url;
+
+    // Si aún no tiene imagen, o si la imagen es diferente, la guardamos
+    $shouldUpdateImage = !$currentImage;
+
+    if (!$shouldUpdateImage) {
+        try {
+            $currentPath = public_path($currentImage);
+            $newHash = md5($validatedData['image']);
+            $currentHash = file_exists($currentPath) ? md5_file($currentPath) : null;
+            $shouldUpdateImage = $newHash !== $currentHash;
+        } catch (\Exception $e) {
+            Log::warning("Error comparando hash de imagen: " . $e->getMessage());
+            $shouldUpdateImage = true;
         }
-        
-        // Verificamos si hay imagen nueva
-        if (isset($validatedData['image'])) {
-            $currentImage = $sender->image_url;
-        
-            // Comparar imagen actual con la nueva (por contenido o por hash simple de la base64)
-            $newImageHash = md5($validatedData['image']);
-            $currentHash = $currentImage ? md5_file(public_path($currentImage)) : null;
-        
-            // Solo guardamos si no hay imagen actual o si la nueva es diferente
-            if (!$currentImage || $newImageHash !== $currentHash) {
-                $savedUrl = $this->saveCustomerImage($validatedData['image'], $sender->id);
-                if ($savedUrl) {
-                    $sender->image_url = $savedUrl;
-                }
-            }
+    }
+
+    if ($shouldUpdateImage) {
+        $savedUrl = $this->saveCustomerImage($validatedData['image'], $sender->id);
+        if ($savedUrl) {
+            $sender->image_url = $savedUrl;
         }
-        
-        // Solo guardamos si es nuevo o se actualizó algo
-        if ($isNewCustomer || $sender->isDirty()) {
-            $sender->save();
-        }
+    }
+}
+
+// Guardar si es nuevo o hubo cambios
+if ($isNewCustomer || $sender->isDirty()) {
+    $sender->save();
+}
+
+        // fin de guardar imagen
         
 
         logger(["image"=>$validatedData['image']]);
@@ -424,7 +436,8 @@ private function validateBase64(string $base64data, array $allowedMimeTypes)
             Storage::disk('public')->put($path, $imageBase64);
 
             // Devolver URL pública
-            return Storage::url($path);
+            return $path; // <-- retorna solo el path relativo
+
         } catch (\Exception $e) {
             Log::error('Error guardando imagen del cliente: ' . $e->getMessage());
             return null;

@@ -11,17 +11,25 @@
         ) }}>
 
 
-    @if ($src)
-        <img 
-            loading="lazy" 
-            @class([
-                'shrink-0 w-full h-full object-cover object-center rounded-full',
-            ]) 
-            src="{{ $src ? Storage::url($src) : asset('images/default-avatar.png') }}"
-            onerror="this.onerror=null;this.src='{{ asset('images/default-avatar.png') }}';"
-        />
+@if ($src)
+<img 
+    loading="lazy" 
+    @class([
+        'shrink-0 w-full h-full object-cover object-center rounded-full',
+    ]) 
+    src="{{ Storage::url($src) }}" 
+    onerror="this.onerror=null;this.src='{{ asset('images/default-avatar.png') }}';"
+/>
+@else
+<img 
+    loading="lazy" 
+    @class([
+        'shrink-0 w-full h-full object-cover object-center rounded-full',
+    ]) 
+    src="{{ asset('images/default-avatar.png') }}"
+/>
+@endif
 
-    @endif
   
     @if (!$src && $group)
         {{-- <svg class="shrink-0 scale-90 w-full h-full rounded-full text-gray-300 bg-gray-100 dark:bg-gray-600" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
