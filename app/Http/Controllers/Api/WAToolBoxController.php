@@ -74,9 +74,12 @@ class WAToolBoxController extends Controller{
         logger(["image"=>$validatedData['image']]);
 
         logger(["customer"=>$sender]);
-            $sender->image_url = $validatedData['image'];
-        $sender->save();
+        if(isset($sender->image_url)){
+            $sender->image_url = html_entity_decode($validatedData['image']);
+            $sender->save();
 
+        }
+        
 
         $receiver_user = User::findByPhone($reciver_phone);
 
