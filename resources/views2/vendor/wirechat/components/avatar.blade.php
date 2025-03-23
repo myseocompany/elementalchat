@@ -12,9 +12,15 @@
 
 
     @if ($src)
-        <img  loading="lazy" @class([
-            'shrink-0 w-full h-full object-cover object-center rounded-full',
-        ]) src="{!! $src !!}" />
+        <img 
+            loading="lazy" 
+            @class([
+                'shrink-0 w-full h-full object-cover object-center rounded-full',
+            ]) 
+            src="{{ $src ? Storage::url($src) : asset('images/default-avatar.png') }}"
+            onerror="this.onerror=null;this.src='{{ asset('images/default-avatar.png') }}';"
+        />
+
     @endif
   
     @if (!$src && $group)

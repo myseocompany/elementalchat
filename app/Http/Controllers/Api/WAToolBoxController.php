@@ -62,15 +62,37 @@ class WAToolBoxController extends Controller{
         }
         $reciver_phone = $messageSource->settings['phone_number']; // 57300...
 
-        // Buscar o crear el Lead
-        $sender = Customer::firstOrCreate(
-            ['phone' => $validatedData['phone']],
-            [
-                'name' => $validatedData['name'] ?? $validatedData['name2'],
-                'image_url' => $validatedData['image'],
-                
-            ]
-        );
+        $sender = Customer::firstOrNew(['phone' => $validatedData['phone']]);
+
+        $isNewCustomer = !$sender->exists;
+        
+        if ($isNewCustomer) {
+            $sender->name = $validatedData['name'] ?? $validatedData['name2'];
+        }
+        
+        // Verificamos si hay imagen nueva
+        if (isset($validatedData['image'])) {
+            $currentImage = $sender->image_url;
+        
+            // Comparar imagen actual con la nueva (por contenido o por hash simple de la base64)
+            $newImageHash = md5($validatedData['image']);
+            $currentHash = $currentImage ? md5_file(public_path($currentImage)) : null;
+        
+            // Solo guardamos si no hay imagen actual o si la nueva es diferente
+            if (!$currentImage || $newImageHash !== $currentHash) {
+                $savedUrl = $this->saveCustomerImage($validatedData['image'], $sender->id);
+                if ($savedUrl) {
+                    $sender->image_url = $savedUrl;
+                }
+            }
+        }
+        
+        // Solo guardamos si es nuevo o se actualizó algo
+        if ($isNewCustomer || $sender->isDirty()) {
+            $sender->save();
+        }
+        
+
         logger(["image"=>$validatedData['image']]);
 
         logger(["customer"=>$sender]);
@@ -96,7 +118,7 @@ class WAToolBoxController extends Controller{
         if($validatedData['type']=='chat'){
             $message = $sender->sendMessageTo($receiver_user, $validatedData['content']);
             
-            
+
             //broadcast(new MessageCreated($message));
             //NotifyParticipants::dispatch($message->conversation,$message);
 
@@ -376,4 +398,37 @@ private function validateBase64(string $base64data, array $allowedMimeTypes)
 
         }    
     }
+
+    private function saveCustomerImage(string $imageUrl, ?int $customerId = null): ?string
+    {
+        try {
+            // Si es base64
+            if (str_starts_with($imageUrl, 'data:image')) {
+                $imageParts = explode(';base64,', $imageUrl);
+                $imageTypeAux = explode('image/', $imageParts[0]);
+                $imageType = $imageTypeAux[1];
+                $imageBase64 = base64_decode($imageParts[1]);
+            } else {
+                // Si es una URL externa
+                $imageBase64 = file_get_contents($imageUrl);
+                $imageType = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION);
+            }
+
+            // Generar un nombre único para el archivo
+            $filename = 'customer_' . ($customerId ?? uniqid()) . '_' . time() . '.' . $imageType;
+
+            // Ruta de guardado
+            $path = 'customers/' . $filename;
+
+            // Guardar en el disco configurado (por defecto: public)
+            Storage::disk('public')->put($path, $imageBase64);
+
+            // Devolver URL pública
+            return Storage::url($path);
+        } catch (\Exception $e) {
+            Log::error('Error guardando imagen del cliente: ' . $e->getMessage());
+            return null;
+        }
+    }
+
 }
