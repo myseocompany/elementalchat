@@ -55,7 +55,10 @@ class WAToolBoxController extends Controller{
         // Identificar el Message Source
         $messageSource = MessageSource::where('APIKEY', $validatedData['APIKEY'])->first();
         if (!$messageSource) {
+            Log::info('MessageSource. Error Fuente del mensaje no encontrada');
             return response()->json(['message' => 'Fuente del mensaje no encontrada'], 404);
+        }else{
+            Log::info('MessageSource. Fuente del mensaje encontrada');
         }
         $reciver_phone = $messageSource->settings['phone_number']; // 57300...
 
@@ -84,7 +87,7 @@ class WAToolBoxController extends Controller{
 
         Log::info('Usuario identificado: ' . $receiver_user->name);
 
-        Log::info('Telefono Nicolas '.$reciver_phone);
+        Log::info('Telefono '.$reciver_phone);
         $conversation = $sender->createConversationWith($receiver_user);
         
         if($validatedData['type']=='chat'){
