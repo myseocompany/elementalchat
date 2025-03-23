@@ -50,7 +50,7 @@ require __DIR__.'/auth.php';
 
 // Customer Routes
 Route::middleware('auth')->prefix('customers')->group(function () {
-    Route::get('/', [CustomerController::class, 'leads'])->name('customers');
+    Route::get('/', [CustomerController::class, 'index'])->name('customers');
     Route::get('/create', [CustomerController::class, 'create']);
     Route::post('/', [CustomerController::class, 'store']);
     Route::get('/{customer}/edit', [CustomerController::class, 'edit']);

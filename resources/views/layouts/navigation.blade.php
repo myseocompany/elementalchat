@@ -29,6 +29,9 @@
           @if (Auth::user()->role_id == 1)
             {{-- expr --}}
             <li class="nav-item">
+              <a class="nav-link" href="/chats">Inbox</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="/customers/phase/1">Contactos</a>
             </li>
 
@@ -40,6 +43,17 @@
             <li class="nav-item">
               <a class="nav-link" href="/orders">Ordenes</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/audiences/1/customers">Magistrales</a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="/audiences/2/customers">Terminados</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/audiences/3/customers">Descuento</a>
+            </li>
+            
             <li class="nav-item">
               <a class="nav-link" href="/products">Productos</a>
             </li>
