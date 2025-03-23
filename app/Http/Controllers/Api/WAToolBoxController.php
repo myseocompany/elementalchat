@@ -50,7 +50,7 @@ class WAToolBoxController extends Controller{
             'APIKEY' => 'required|string'
         ]);
 
-        Log::info('ValidatedData', [$validatedData]);
+        //Log::info('ValidatedData', [$validatedData]);
         
         // Identificar el Message Source
         $messageSource = MessageSource::where('APIKEY', $validatedData['APIKEY'])->first();
@@ -58,12 +58,13 @@ class WAToolBoxController extends Controller{
             Log::info('MessageSource. Error Fuente del mensaje no encontrada', [$validatedData['APIKEY']]);
             return response()->json(['message' => 'Fuente del mensaje no encontrada'], 404);
         }else{
-            Log::info('MessageSource. Fuente del mensaje encontrada');
+            //Log::info('MessageSource. Fuente del mensaje encontrada');
         }
         $reciver_phone = $messageSource->settings['phone_number']; // 57300...
 
         // inicio de guardar imagen
         $sender = Customer::firstOrNew(['phone' => $validatedData['phone']]);
+
 $isNewCustomer = !$sender->exists;
 
 if ($isNewCustomer) {
@@ -76,6 +77,8 @@ if (isset($validatedData['image']) && !empty($validatedData['image'])) {
 
     // Si aún no tiene imagen, o si la imagen es diferente, la guardamos
     $shouldUpdateImage = !$currentImage;
+    Log::info('shouldUpdateImage', [$shouldUpdateImage]);
+            
 
     if (!$shouldUpdateImage) {
         try {
