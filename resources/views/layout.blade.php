@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" >
   <head>
-
-<script src="/js/jquery-3.2.1.slim.min.js"></script>
+      <script src="/js/jquery-3.2.1.slim.min.js"></script>
       <script type="text/javascript">
       var jQuery_3_2_1 = $.noConflict(true);
       </script>
@@ -22,6 +21,11 @@
     <meta name="google-site-verification" content="LxHKqj-7LHr4nr1F8SSnd7J2_vI1H0lgTg2s1hb-t7A" />
     <link rel="icon" type="image/png" href="/img/perfil.png">
     <title>CRM PARA TU PIEL</title>
+        {{-- ✅ TailwindCSS (desde CDN para desarrollo) --}}
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        {{-- ✅ Livewire Styles --}}
+        @livewireStyles
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <!-- fonts online -->
@@ -53,24 +57,27 @@ legend.scheduler-border {
     font-weight: bold !important;
     text-align: left !important;
 }
+
     </style>
   </head>
-  <body>
-    <div class="container">
-      <div id="main-navigation">
+  <body class="bg-gray-50 text-gray-800">
+    <div id="main-navigation">
         @include('layouts.navigation')
-      </div>
-      <div id="main-content">
-        @yield('content')  
-      </div>
+    </div>
+  
+    <main class="pt-20 max-w-7xl mx-auto px-4">
+        @yield('content')
+    </main>
+  
+    @include('layouts.footer')
+  
       
 
-      <!-- Site footer -->
-      @include('layouts.footer')
 
-    </div> <!-- /container -->
-<script src="/js/popper.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+        {{-- ✅ Livewire Scripts --}}
+        @livewireScripts
+  <script src="/js/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
     <!-- Bootstrap core JavaScript
   
     ================================================== -->

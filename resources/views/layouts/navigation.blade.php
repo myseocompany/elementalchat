@@ -1,217 +1,101 @@
-<style type="text/css">
-	.navbar{
-        color: #ffffff !important;
-}
-</style>
-<nav class="navbar navbar-expand-md navbar-white fixed-top bg-white">
-  <div id="nav-container" class="container">
-    <a class="navbar-brand" href="#"><img src="/img/perfil.png" alt="" height="70"></a>
-      <button class="navbar-toggler d-lg-none collapsed" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-        
-        <span class="fa-solid fa-bars"></span>
-      </button>
-
-      <div class="navbar-collapse collapse" id="navbarsExampleDefault" style="">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item active">
-            <a class="nav-link" href="/">Inicio <span class="sr-only">(current)</span></a>
-          </li>
-          
-          <!-- Authentication Links -->
-                        @if (Auth::guest())
-                            
-                            
-          <!--
-          <li class="nav-item"><a class="nav-link" href="{{ route('register') }}">Register</a></li>
-          -->
-          <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Iniciar Sesion</a></li>
-          @else
-          @if (Auth::user()->role_id == 1)
-            {{-- expr --}}
-            <li class="nav-item">
-              <a class="nav-link" href="/chats">Inbox</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/customers/phase/1">Contactos</a>
-            </li>
-
-            
-            <!-- <li class="nav-item">
-              <a class="nav-link" href="/customers/phase/4">Pedidos</a>
-            </li> -->
-
-            <li class="nav-item">
-              <a class="nav-link" href="/orders">Ordenes</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/audiences/1/customers">Magistrales</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" href="/audiences/2/customers">Terminados</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/audiences/3/customers">Descuento</a>
-            </li>
-            
-            <li class="nav-item">
-              <a class="nav-link" href="/products">Productos</a>
-            </li>
-
-            {{-- <li class="dropdown">
-              <a class="navlink" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                Clientes <span class="caret"></span>
+<nav class="bg-white border-b border-gray-200 shadow-md fixed top-0 w-full z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center">
+              <a href="/">
+                  <img src="/img/perfil.png" alt="Logo" class="h-10">
               </a>
+          </div>
 
-              <ul class="dropdown-menu" role="menu">        
-                  <li>
-                      <a href="/customers/phase/1">Contactos</a>
-                  </li>
-                 
-                  <li>
-                      <a href="/customers/phase/3">Cartera</a>
-                  </li>                  
-                  
-              </ul>
-            </li> --}}
-            <!--
-            <li class="nav-item">
-                <a class="nav-link" href="/products">Inventario</a>
-            </li> 
-        
-            <li class="nav-item">
-                <a class="nav-link" href="/orders/sid/1">Cotizaciones</a>
-            </li>   
-            <li class="nav-item">
-                <a class="nav-link" href="/orders/sid/2">Ordenes</a>
-            </li> 
+          <!-- Desktop Links -->
+          <div class="hidden md:flex space-x-6 items-center">
+              <a href="/" class="text-gray-700 hover:text-blue-600 font-medium">Inicio</a>
+              
+              @auth
+                  @if(Auth::user()->role_id == 1)
+                      <a href="/chats" class="text-gray-700 hover:text-blue-600 font-medium">Inbox</a>
+                      <a href="/customers/phase/1" class="text-gray-700 hover:text-blue-600 font-medium">Contactos</a>
+                      <a href="/orders" class="text-gray-700 hover:text-blue-600 font-medium">Órdenes</a>
+                      <a href="/products" class="text-gray-700 hover:text-blue-600 font-medium">Productos</a>
 
-        -->      
-            <li class="dropdown">
-              <a class="nav-link" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                  Reportes <span class="caret"></span>
-              </a>
+                      <!-- Dropdown -->
+                      <div x-data="{ open: false }" class="relative">
+                          <button @click="open = !open" class="text-gray-700 hover:text-blue-600 font-medium focus:outline-none">
+                              Audiencias
+                          </button>
+                          <div x-show="open" @click.away="open = false"
+                               class="absolute mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded z-50">
+                              <a href="/audiences/1/customers" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Magistrales</a>
+                              <a href="/audiences/2/customers" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Terminados</a>
+                              <a href="/audiences/3/customers" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Descuento</a>
+                          </div>
+                      </div>
+                  @endif
+              @endauth
+          </div>
 
-              <ul class="dropdown-menu" role="menu">
-                  <li>
-                      <a class="nav-link" href="/bi/newcustomers">Clientes nuevos</a>
-                  </li>
-                  <li>
-                      <a class="nav-link" href="/bi/purchasefrequency">Frecuencia de compra</a>
-                  </li>
-                  <li>
-                      <a class="nav-link" href="/bi/averageTicket">Ticket promedio</a>
-                  </li>
+          <!-- Right side (auth + search) -->
+          <div class="flex items-center space-x-4">
+              @auth
+                  <div x-data="{ open: false }" class="relative">
+                      <button @click="open = !open" class="text-gray-700 hover:text-blue-600 font-medium focus:outline-none">
+                          {{ Auth::user()->name }}
+                      </button>
+                      <div x-show="open" @click.away="open = false"
+                           class="absolute mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded z-50">
+                          @if (Auth::user()->role_id == 1)
+                              <a href="/config" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Configuración</a>
+                          @endif
+                          <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                             class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                              Salir
+                          </a>
+                          <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                              @csrf
+                          </form>
+                      </div>
+                  </div>
+              @else
+                  <a href="{{ route('login') }}" class="text-gray-700 hover:text-blue-600 font-medium">Iniciar Sesión</a>
+              @endauth
 
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ route('actions') }}">Acciones</a>
-                  </li>
-                  <li>
-                      <a class="nav-link" href="/reports/customers_time">Clientes en el tiempo</a>
-                  </li>
-                  <li>
-                      <a  class="nav-link" href="/reports/users/customer/status">Estados por usuario</a>
-                  </li>
-                  <li>
-                      <a class="nav-link" href="/reports/users/customer/actions">Acciones por usuario</a>
-                  </li>                  
-                  {{-- <li>
-                      <a href="/orders">Ordenes</a>
-                  </li> --}}
-              </ul>
-            </li>
-            
-          @endif
+              @auth
+              <!-- Search -->
+              <form action="/customers" method="GET" class="hidden md:flex items-center space-x-2">
+                  <input type="text" name="search" placeholder="Buscar..." value="{{ request()->search }}"
+                      class="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring focus:border-blue-300">
+                  <button type="submit" class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Ir</button>
+              </form>
+              @endauth
+          </div>
 
-          @if (Auth::user()->role_id == 2)
-            <li class="nav-item">
-              <a class="nav-link" href="/customers/phase/1">Contactos</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/customers/phase/1">Ordenes</a>
-            </li>
-            
-            <li class="nav-item">
-              <a class="nav-link" href="/customers/phase/3">Cartera</a>
-            </li>
-            
-            <li class="nav-item">
-            	<a class="nav-link" href="/products">Inventario</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/orders/sid/1">Cotizaciones</a>
-            </li>   
-            <li class="nav-item">
-                <a class="nav-link" href="/orders/sid/2">Ordenes</a>
-            </li> 
-            <li class="nav-item">
-              <a class="nav-link" href="/products">Productos</a>
-          </li>       
-            <li class="dropdown">
-              <a class="nav-link" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                  Reportes <span class="caret"></span>
-              </a>
-
-              <ul class="dropdown-menu" role="menu">
-                <li class="nav-item">
-                  <a class="nav-link" href="{{ route('actions') }}">Acciones</a>
-                </li>
-                  <li>
-                      <a href="/reports/customers_time">Clientes en el tiempo</a>
-                  </li>
-                  <li>
-                      <a href="/reports/users/customer/status">Estados por usuario</a>
-                  </li>
-                  <li>
-                      <a href="/reports/users/customer/actions">Acciones por usuario</a>
-                  </li>                                    
-              </ul>
-            </li>            
-          <!--<li class="nav-item">
-            <a class="nav-link" href="{{ route('leads') }}">Prospectos</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('customers') }}">Clientes</a>
-          </li>
-            
-            <li class="nav-item">
-            <a class="nav-link" href="{{ route('actions') }}">Acciones</a>
-          </li>-->
-            @endif
-                <li class="dropdown">
-                    <a class="nav-link" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                        {{Auth::user()->name}}<span class="caret"></span>
-                    </a>
-
-                    <ul class="dropdown-menu" role="menu">
-                      @if (Auth::user()->role_id == 1)
-                      <li class="nav-item">
-                        <a class="nav-link" href="/config">Configuracion</a>
-                      </li>
-                      @endif
-                        <li>
-                            <a class="nav-link" href="{{ route('logout') }}"
-                                onclick="event.preventDefault();
-                                         document.getElementById('logout-form').submit();">
-                                Salir
-                            </a>
-
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                {{ csrf_field() }}
-                            </form>
-                        </li>
-                    </ul>
-                </li>
-            @endif
-        </ul>
-
-         @if (!Auth::guest())
-          <form class="form-inline mt-2 mt-md-0" action="/customers" method="GET">
-            <input class="form-control mr-sm-2" type="text" placeholder="Busca o escribe" aria-label="Cliente" id="name" name="search" @if (isset($request->search)) value="{{$request->search}}" @endif>
-            <button class="btn btn-primary my-2 my-sm-0" type="submit">Ir</button>
-          </form>  
-        @endif
-        
-      </div>   
+          <!-- Mobile menu toggle -->
+          <div class="md:hidden flex items-center">
+              <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-700 focus:outline-none">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"/>
+                  </svg>
+              </button>
+          </div>
+      </div>
   </div>
-</nav> 
+
+  <!-- Mobile Menu -->
+  <div x-data="{ mobileMenuOpen: false }" x-show="mobileMenuOpen"
+       class="md:hidden px-4 pb-4 bg-white shadow-md border-t border-gray-200">
+      <a href="/" class="block py-2 text-gray-700 hover:text-blue-600">Inicio</a>
+      @auth
+          @if(Auth::user()->role_id == 1)
+              <a href="/chats" class="block py-2 text-gray-700 hover:text-blue-600">Inbox</a>
+              <a href="/customers/phase/1" class="block py-2 text-gray-700 hover:text-blue-600">Contactos</a>
+              <a href="/orders" class="block py-2 text-gray-700 hover:text-blue-600">Órdenes</a>
+              <a href="/products" class="block py-2 text-gray-700 hover:text-blue-600">Productos</a>
+              <a href="/audiences/1/customers" class="block py-2 text-gray-700 hover:text-blue-600">Magistrales</a>
+              <a href="/audiences/2/customers" class="block py-2 text-gray-700 hover:text-blue-600">Terminados</a>
+              <a href="/audiences/3/customers" class="block py-2 text-gray-700 hover:text-blue-600">Descuento</a>
+          @endif
+      @endauth
+  </div>
+</nav>

@@ -107,6 +107,9 @@ Route::middleware('auth')->prefix('roles')->group(function () {
 
 Route::middleware('auth')->prefix('audiences')->group(function () {
     Route::get('/manage', AudienceCustomerManager::class);
+    
+    Route::get('/{audience}/manage', AudienceCustomerManager::class)->name('audiences.manage');
+
 });
 
 
