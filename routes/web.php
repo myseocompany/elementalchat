@@ -259,6 +259,8 @@ Route::middleware('auth')->prefix('orders')->group(function () {
     Route::get('/', [OrderController::class, 'index']);
     Route::get('/create', [OrderController::class, 'create'])->name('orders.create');
     Route::get('/{cid}/quotes/create', [OrderController::class, 'create'])->name('orders.create');
+    Route::get('/{cid}/create', [OrderController::class, 'create'])->name('orders.create');
+    
     Route::get('/{oid}/add/product', [OrderController::class, 'addProducts']);
     Route::get('/sid/{sid}', [OrderController::class, 'index']);
     Route::get('/create/sid/{sid}', [OrderController::class, 'create'])->name('orders.create');
