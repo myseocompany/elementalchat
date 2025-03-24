@@ -99,7 +99,8 @@ class WAToolBoxController extends Controller{
 
         
 
-        $receiver_user = User::findByPhone($reciver_phone);
+        //$receiver_user = User::findByPhone($reciver_phone);
+        $receiver_user = User::find(2);
 
         if (!$receiver_user) {
             Log::warning('No se encontró un usuario con el teléfono: ' . $reciver_phone);
