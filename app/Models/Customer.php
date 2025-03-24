@@ -400,14 +400,18 @@ class Customer extends Authenticatable
     }
 
     public function getGenderNameAttribute()
-        {
-            $genders = [
-                'F' => 'Femenino',
-                'M' => 'Masculino',
-                'U' => 'Desconocido'
-            ];
-    
-            return $genders[$this->gender] ?? 'Desconocido';
-        }
+    {
+        $genders = [
+            'F' => 'Femenino',
+            'M' => 'Masculino',
+            'U' => 'Desconocido'
+        ];
 
+        return $genders[$this->gender] ?? 'Desconocido';
+    }
+
+    public function audiences()
+    {
+        return $this->belongsToMany(Audience::class, 'audience_customer');
+    }
 }

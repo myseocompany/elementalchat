@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\RDTestController;
+use App\Livewire\AudienceCustomerManager;
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CustomerController;
@@ -73,6 +74,11 @@ Route::middleware('auth')->prefix('customers')->group(function () {
     Route::get('/{customer}/action/updateAjax', [CustomerController::class, 'updateAjaxStatus']);
     Route::get('/phase/{pid}', [CustomerController::class, 'getcustomers']);
     Route::get('/{pid}', [CustomerController::class, 'dragleads']);
+
+
+
+    
+
 });
 
 // Optimizer Routes
@@ -98,6 +104,12 @@ Route::middleware('auth')->prefix('roles')->group(function () {
     Route::get('/{role}/show', [RoleController::class, 'show']);
     Route::get('/{role}/destroy', [RoleController::class, 'destroy']);
 });
+
+Route::middleware('auth')->prefix('audiences')->group(function () {
+    Route::get('/manage', AudienceCustomerManager::class);
+});
+
+
 
 // Site Routes
 Route::get('/config', [SiteController::class, 'config']);
