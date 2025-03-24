@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\RDTestController;
 use App\Livewire\AudienceCustomerManager;
+use App\Http\Controllers\OrderFileController;
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CustomerController;
@@ -419,3 +420,6 @@ Route::get('/reset_password', function(){
 Route::get('/rdtest', [RDTestController::class, 'test']);
 Route::post('/rdtest', [RDTestController::class, 'handleRequest'])->name('rdtest.post');
 
+// Rutas para subir y eliminar archivos de órdenes
+Route::post('/order-files/store', [OrderFileController::class, 'store'])->name('order-files.store');
+Route::post('/order-files/delete/{id}', [OrderFileController::class, 'delete'])->name('order-files.delete');
