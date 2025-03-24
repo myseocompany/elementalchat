@@ -18,7 +18,7 @@
                       <a href="/customers/phase/1" class="text-gray-700 hover:text-blue-600 font-medium">Contactos</a>
                       <a href="/orders" class="text-gray-700 hover:text-blue-600 font-medium">Órdenes</a>
                       <a href="/products" class="text-gray-700 hover:text-blue-600 font-medium">Productos</a>
-
+                      <a href="https://panel.smartchatapp.online/" class="text-gray-700 hover:text-blue-600 font-medium">Bot</a>
                       <!-- Dropdown -->
                       <div x-data="{ open: false }" class="relative">
                           <button @click="open = !open" class="text-gray-700 hover:text-blue-600 font-medium focus:outline-none">
