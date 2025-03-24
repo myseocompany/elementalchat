@@ -31,7 +31,7 @@ class Customer extends Authenticatable
         // if($this->image_url)
         //     $image = $this->image_url;
         //return $this->image_url??null;  // Adjust 'avatar_url' to your field
-        return asset('storage/' . $customer->image_url)??null;
+        return asset('storage/' . $this->image_url)??null;
     }
 
  
