@@ -263,7 +263,7 @@
 	</thead>
 	<tbody>
 
-		<form action="/order/products/store"  method="POST">
+		<form action="/orders/products/store"  method="POST">
 
 			{{ csrf_field() }}
 			

@@ -258,13 +258,14 @@ Route::middleware('auth')->prefix('orders')->group(function () {
     Route::post('/{id}/update', [OrderController::class, 'update']);
     Route::post('/', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/', [OrderController::class, 'index']);
-    Route::get('/create', [OrderController::class, 'create'])->name('orders.create');
-    Route::get('/{cid}/quotes/create', [OrderController::class, 'create'])->name('orders.create');
+
+    #Route::get('/{cid}/quotes/create', [OrderController::class, 'create'])->name('orders.create');
+    #Route::get('/create', [OrderController::class, 'create'])->name('orders.create');
     Route::get('/{cid}/create', [OrderController::class, 'create'])->name('orders.create');
+    #Route::get('/create/sid/{sid}', [OrderController::class, 'create'])->name('orders.create');
     
     Route::get('/{oid}/add/product', [OrderController::class, 'addProducts']);
     Route::get('/sid/{sid}', [OrderController::class, 'index']);
-    Route::get('/create/sid/{sid}', [OrderController::class, 'create'])->name('orders.create');
     Route::post('/search_customer', [OrderController::class, 'searchCustomer']);
     Route::get('/product/{pid}', [OrderController::class, 'orderProduct']);
     Route::post('/save', [OrderController::class, 'SaveOrder']);
@@ -282,7 +283,7 @@ Route::middleware('auth')->prefix('orders')->group(function () {
 
     //Route::post('/storeproduct', [OrderController::class, 'storeProduct']);
     
-    Route::post('/products/store', 'OrderController@storeProduct');
+    Route::post('/products/store', [OrderController::class, 'storeProduct']);
 });
 
 // Order Transaction Routes
