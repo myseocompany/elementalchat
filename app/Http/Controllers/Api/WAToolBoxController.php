@@ -61,7 +61,7 @@ class WAToolBoxController extends Controller{
             //Log::info('MessageSource. Fuente del mensaje encontrada');
         }
         $reciver_phone = $messageSource->settings['phone_number']; // 57300...
-
+        $isNewCustomer = false;
         
         // inicio de guardar imagen
         /*
@@ -81,6 +81,7 @@ class WAToolBoxController extends Controller{
                 'name' => $validatedData['name'] ?? $validatedData['name2'],
             ]);
             $sender->save();
+            $isNewCustomer = true;
         } else {
             // Si existe y no tiene nombre, lo actualizamos
             if (empty($sender->name) && !empty($validatedData['name'])) {
