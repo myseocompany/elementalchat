@@ -414,4 +414,15 @@ class Customer extends Authenticatable
     {
         return $this->belongsToMany(Audience::class, 'audience_customer');
     }
+
+    public static function findByNormalizedPhone(string $inputPhone): ?self
+    {
+        $normalized = preg_replace('/[^0-9]/', '', $inputPhone); // limpia cualquier símbolo
+        $last10 = substr($normalized, -10); // nos quedamos solo con los últimos 10 dígitos
+
+        return self::whereRaw("RIGHT(REGEXP_REPLACE(phone, '[^0-9]', ''), 10) = ?", [$last10])
+            ->orWhereRaw("RIGHT(REGEXP_REPLACE(phone2, '[^0-9]', ''), 10) = ?", [$last10])
+            ->first();
+    }
+
 }

@@ -64,12 +64,31 @@ class WAToolBoxController extends Controller{
 
         
         // inicio de guardar imagen
+        /*
         $sender = Customer::firstOrNew(['phone' => $validatedData['phone']]);
         $isNewCustomer = !$sender->exists;
 
         if ($isNewCustomer) {
             $sender->name = $validatedData['name'] ?? $validatedData['name2'];
         }
+            */
+        $sender = Customer::findByNormalizedPhone($validatedData['phone']);
+
+        if (!$sender) {
+            // Si no existe, lo creamos
+            $sender = new Customer([
+                'phone' => $validatedData['phone'],
+                'name' => $validatedData['name'] ?? $validatedData['name2'],
+            ]);
+            $sender->save();
+        } else {
+            // Si existe y no tiene nombre, lo actualizamos
+            if (empty($sender->name) && !empty($validatedData['name'])) {
+                $sender->name = $validatedData['name'];
+                $sender->save();
+            }
+        }
+                        
 
         if (!empty($validatedData['image'])) {
             $currentImage = $sender->image_url;
