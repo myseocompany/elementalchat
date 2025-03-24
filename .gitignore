@@ -5,7 +5,7 @@
 /public/storage
 /storage/*.key
 /vendor
-/aricrm
+/aricrm2
 .env
 .env.backup
 .env.production

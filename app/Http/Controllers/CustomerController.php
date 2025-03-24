@@ -103,23 +103,26 @@ class CustomerController extends Controller
     }
 
     public function getCustomers(Request $request)
-    {
+    {   
+        
         $users = $this->getUsers();
         $customer_options = CustomerStatus::all();
         $statuses = $this->getStatuses($request, 1);
         $phase_id = 0;
         //$model = $this->getModel($request, $statuses, $phase_id, 50);
+        
         $model = $this->customerService->filterCustomers($request, $statuses, $phase_id, false, 5);
         
         $customersGroup =  $this->customerService->filterCustomers($request, $statuses, $phase_id, true, 5);
+        //dd($customersGroup);
         $projects = Project::all();
 
         $sources = CustomerSource::orderby('name')->get();
 
-        $pending_actions = $this->getPendingActions();
+        //$pending_actions = $this->getPendingActions();
 
-
-        return view('customers.index', compact('model', 'request', 'customer_options', 'customersGroup', 'users', 'sources', 'projects', 'pending_actions'));
+        
+        return view('customers.index', compact('model', 'request', 'customer_options', 'customersGroup', 'users', 'sources', 'projects'));
     }
 
 
@@ -142,7 +145,9 @@ class CustomerController extends Controller
     public function excel(Request $request)
     {
         $statuses = $this->getStatuses($request, 1);
-        $model = $this->getModel($request, $statuses, 1, 500000);
+        //$model = $this->getModel($request, $statuses, 1, 500000);
+        $model = $this->customerService->filterCustomers($request, $statuses, 1, false, 500000);
+
 
         $unsubscribedPhoneNumbers = CustomerUnsubscribe::pluck('phone')->toArray();
 
@@ -276,8 +281,13 @@ class CustomerController extends Controller
         $users = $this->getUsers();
         $customer_options = CustomerStatus::all();
         $statuses = $this->getStatuses($request, 1);
-        $model = $this->getModel($request, $statuses, 1);
-        $customersGroup = $this->countFilterCustomers($request, $statuses);
+        //$model = $this->getModel($request, $statuses, 1);
+        $model = $this->customerService->filterCustomers($request, $statuses, 1, false, 5);
+
+
+        //$customersGroup = $this->countFilterCustomers($request, $statuses);
+        $customersGroup = $this->customerService->filterCustomers($request, $statuses, 1, true, 5);
+
         $projects = Project::all();
         $pending_actions = $this->getPendingActions();
 
