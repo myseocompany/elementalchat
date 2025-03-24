@@ -20,10 +20,10 @@
     <meta name="author" content="">
     <meta name="google-site-verification" content="LxHKqj-7LHr4nr1F8SSnd7J2_vI1H0lgTg2s1hb-t7A" />
     <link rel="icon" type="image/png" href="/img/perfil.png">
-    <title>CRM PARA TU PIEL</title>
-        {{-- ✅ TailwindCSS (desde CDN para desarrollo) --}}
-        <script src="https://cdn.tailwindcss.com"></script>
+    <title>{{ config('app.name', 'Laravel') }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+        
         {{-- ✅ Livewire Styles --}}
         @livewireStyles
     <!-- Bootstrap core CSS -->
