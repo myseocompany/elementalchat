@@ -62,48 +62,33 @@ class WAToolBoxController extends Controller{
         }
         $reciver_phone = $messageSource->settings['phone_number']; // 57300...
 
+        
         // inicio de guardar imagen
         $sender = Customer::firstOrNew(['phone' => $validatedData['phone']]);
+        $isNewCustomer = !$sender->exists;
 
-$isNewCustomer = !$sender->exists;
+        if ($isNewCustomer) {
+            $sender->name = $validatedData['name'] ?? $validatedData['name2'];
+        }
 
-if ($isNewCustomer) {
-    $sender->name = $validatedData['name'] ?? $validatedData['name2'];
-}
-
-// Guardar imagen solo si no existe o si es nueva
-if (isset($validatedData['image']) && !empty($validatedData['image'])) {
-    $currentImage = $sender->image_url;
-
-    // Si aún no tiene imagen, o si la imagen es diferente, la guardamos
-    $shouldUpdateImage = !$currentImage;
-    Log::info('shouldUpdateImage', [$shouldUpdateImage]);
+        if (!empty($validatedData['image'])) {
+            $currentImage = $sender->image_url;
+            $shouldUpdateImage = $this->shouldUpdateCustomerImage($currentImage, $validatedData['image']);
             
-
-    if (!$shouldUpdateImage) {
-        try {
-            $currentPath = public_path($currentImage);
-            $newHash = md5($validatedData['image']);
-            $currentHash = file_exists($currentPath) ? md5_file($currentPath) : null;
-            $shouldUpdateImage = $newHash !== $currentHash;
-        } catch (\Exception $e) {
-            Log::warning("Error comparando hash de imagen: " . $e->getMessage());
             $shouldUpdateImage = true;
-        }
-    }
+            Log::info('shouldUpdateImage', [$shouldUpdateImage]);
 
-    if ($shouldUpdateImage) {
-        $savedUrl = $this->saveCustomerImage($validatedData['image'], $sender->id);
-        if ($savedUrl) {
-            $sender->image_url = $savedUrl;
+            if ($shouldUpdateImage) {
+                $savedUrl = $this->saveCustomerImage($validatedData['image'], $sender->id);
+                if ($savedUrl) {
+                    $sender->image_url = $savedUrl;
+                }
+            }
         }
-    }
-}
 
-// Guardar si es nuevo o hubo cambios
-if ($isNewCustomer || $sender->isDirty()) {
-    $sender->save();
-}
+        if ($isNewCustomer || $sender->isDirty()) {
+            $sender->save();
+        }
 
         // fin de guardar imagen
         
@@ -111,11 +96,7 @@ if ($isNewCustomer || $sender->isDirty()) {
         logger(["image"=>$validatedData['image']]);
 
         logger(["customer"=>$sender]);
-        if(isset($validatedData['image'])){
-            $sender->image_url = html_entity_decode($validatedData['image']);
-            $sender->save();
 
-        }
         
 
         $receiver_user = User::findByPhone($reciver_phone);
@@ -406,7 +387,7 @@ private function validateBase64(string $base64data, array $allowedMimeTypes)
         }
 
         // Guardar la solicitud como JSON
-        logger($requestData);
+        //logger($requestData);
         if(isset($requestData["type"]) && ($requestData["type"]!= WAMessageType::IMAGE->value)){
             $model->request =  json_encode($requestData);
             $model->save();
@@ -445,6 +426,37 @@ private function validateBase64(string $base64data, array $allowedMimeTypes)
             Log::error('Error guardando imagen del cliente: ' . $e->getMessage());
             return null;
         }
+    }
+
+
+
+    private function shouldUpdateCustomerImage(?string $currentImage, ?string $newImageUrl): bool
+    {
+        if (empty($newImageUrl)) return false;
+        if (!$currentImage) return true;
+
+        try {
+            $newHash = $this->extractHashFromWhatsAppUrl($newImageUrl);
+            $currentHash = pathinfo($currentImage, PATHINFO_FILENAME); // Ej: customer_27811_1742774763
+
+            // comparar hashes: si no coincide, actualizar
+            return !str_contains($currentImage, $newHash);
+        } catch (\Exception $e) {
+            Log::warning("Error comparando imágenes por hash: " . $e->getMessage());
+            return true;
+        }
+    }
+
+
+
+
+    private function extractHashFromWhatsAppUrl($url): ?string
+    {
+        $parts = parse_url($url);
+        if (!isset($parts['query'])) return null;
+
+        parse_str($parts['query'], $queryParams);
+        return $queryParams['oh'] ?? null;
     }
 
 }
