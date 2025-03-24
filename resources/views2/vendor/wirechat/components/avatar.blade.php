@@ -12,14 +12,9 @@
 
 
 @if ($src)
-<img 
-    loading="lazy" 
-    @class([
-        'shrink-0 w-full h-full object-cover object-center rounded-full',
-    ]) 
-    src="{{ Storage::url($src) }}" 
-    onerror="this.onerror=null;this.src='{{ asset('images/default-avatar.png') }}';"
-/>
+
+<img src="{{ Storage::exists($customer->image_url) ? Storage::url($customer->image_url) : $originalImageFromWhatsapp }}" />
+
 @else
 <img 
     loading="lazy" 
