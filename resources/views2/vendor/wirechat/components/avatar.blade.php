@@ -20,8 +20,7 @@
     src="{{ asset('storage/' . $customer->image_url) }}" 
     onerror="this.onerror=null;this.src='{{ asset('images/default-avatar.png') }}';"
 />
-
-<img src="{{ Storage::exists($customer->image_url) ? Storage::url($customer->image_url) : $originalImageFromWhatsapp }}" />
+{{ asset('storage/' . $customer->image_url) }}
 
 @else
 <img 
