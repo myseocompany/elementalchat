@@ -182,7 +182,7 @@
             <label for="document">Genero:</label>
             <select id="meta_gender_id" name="meta_gender_id" class="form-control">
               <option>Seleccione...</option>
-              @foreach(App\CustomerMetaData::getOptions(1) as $item)
+              @foreach(App\Models\CustomerMetaData::getOptions(1) as $item)
               <option value="{{$item->id}}">{{$item->value}}</option>
               @endforeach
             </select>
