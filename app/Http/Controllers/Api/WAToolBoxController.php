@@ -105,6 +105,9 @@ class WAToolBoxController extends Controller{
         if (!$receiver_user) {
             Log::warning('No se encontró un usuario con el teléfono: ' . $reciver_phone);
             return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }else{
+            Log::info('Se asigno al usuario 2');
+            
         }
 
         Log::info('Usuario identificado: ' . $receiver_user->name);
