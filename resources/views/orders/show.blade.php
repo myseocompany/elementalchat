@@ -331,6 +331,7 @@ function clearCalculatingMessage() {
 	</div>
 </form>
 <br>
+@include('orders.add_file', ['order_id' => $model->id])
 @include('orders.file-list', ['order_id' => $model->id])
 <br>
 
