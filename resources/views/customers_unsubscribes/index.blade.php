@@ -38,9 +38,9 @@
             <td>{{$item->created_at}}</td>
             <td>{{$item->updated_at}}</td>
             <td>
-                <a href="/customer_unsubscribes/{{$item->phone}}/edit">Editar</a>
+                <a href="/customers_unsubscribe/{{$item->phone}}/edit">Editar</a>
                 |
-                <a href="/customer_unsubscribes/{{$item->phone}}/destroy">Eliminar</a>
+                <a href="/customers_unsubscribe/{{$item->phone}}/destroy">Eliminar</a>
             </td>
         </tr>
         @endforeach
