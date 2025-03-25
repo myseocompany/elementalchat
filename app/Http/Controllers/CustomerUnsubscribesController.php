@@ -15,15 +15,23 @@ class CustomerUnsubscribesController extends Controller{
         return view('customers_unsubscribes.index', compact('model'));
     }
 
-    public function save(Request $request){
+    public function save(Request $request)
+    {
+        $existing = CustomerUnsubscribe::where('phone', $request->phone)->first();
+    
+        if ($existing) {
+            return redirect('/customers_unsubscribe')
+                ->with('error', 'El número de teléfono ya está registrado.');
+        }
+    
         $model = new CustomerUnsubscribe;
         $model->phone = $request->phone;
-
         $model->save();
-
-        return redirect('/customers_unsubscribe');
-
+    
+        return redirect('/customers_unsubscribe')
+            ->with('success', 'Número guardado exitosamente.');
     }
+    
 
     public function edit(Request $request, $phone){
         $model = CustomerUnsubscribe::where("phone", $phone)->first();

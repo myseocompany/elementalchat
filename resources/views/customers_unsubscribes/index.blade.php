@@ -10,7 +10,7 @@
 </div>
 @endif
 <div>
-    <form action="/customer_unsubscribes" method="POST" class="form-inline">
+    <form action="/customers_unsubscribe" method="POST" class="form-inline">
         <div class="">
             {{ csrf_field() }}
             <div class="form-group ">
