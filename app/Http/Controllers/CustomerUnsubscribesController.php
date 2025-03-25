@@ -21,7 +21,7 @@ class CustomerUnsubscribesController extends Controller{
 
         $model->save();
 
-        return redirect('/customer_unsubscribes');
+        return redirect('/customers_unsubscribe');
 
     }
 
