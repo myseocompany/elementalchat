@@ -390,9 +390,8 @@ function clearCalculatingMessage() {
 					</td>
 				
 					<td class="text-center ">
-						@if(isset($item->product))
-                            {{$item->product->price}}
-                        @endif
+						    {{$item->price}}
+                        
 					</td>
 
                     <td class="text-center">{{$item->discount}}%</td>
