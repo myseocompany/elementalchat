@@ -15,10 +15,12 @@
         @foreach ($files as $file)
             <div style="position: relative;">
                 <!-- Miniatura -->
-                <a href="{{ url('laravel/storage/app/public/' . $file->url) }}" data-lightbox="gallery" data-title="{{ $file->name }}">
-                    <img src="{{ url('laravel/storage/app/public/' . $file->url) }}" alt="{{ $file->name }}" 
+                
+                <a href="{{ asset('storage/' . $file->url) }}" data-lightbox="gallery" data-title="{{ $file->name }}">
+                    <img src="{{ asset('storage/' . $file->url) }}" alt="{{ $file->name }}" 
                          style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px; box-shadow: 2px 2px 5px rgba(0,0,0,0.2);">
                 </a>
+                
 
                 <!-- Botón de eliminar -->
                 <button onclick="deleteFile({{ $file->id }})" 
