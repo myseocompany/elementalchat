@@ -46,7 +46,7 @@ class CustomerUnsubscribesController extends Controller{
         $model->phone = $request->phone;
         $model->save();
 
-        return redirect('/customer_unsubscribes');
+        return redirect('/customers_unsubscribe');
 
     }
 
@@ -55,10 +55,10 @@ class CustomerUnsubscribesController extends Controller{
         
         if ($model->delete()) {
 
-            return redirect('customer_unsubscribes')->with('status', 'El telefono <strong>' . $model->phone . '</strong> fué eliminado con éxito!');
+            return redirect('customers_unsubscribe')->with('status', 'El telefono <strong>' . $model->phone . '</strong> fué eliminado con éxito!');
         }
 
-        return redirect('/customer_unsubscribes');
+        return redirect('/customers_unsubscribe');
 
     }
 
