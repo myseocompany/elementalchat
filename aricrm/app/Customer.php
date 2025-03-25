@@ -160,18 +160,19 @@ class Customer extends Model
         return $difference;
     }
     function orders(){
-        return $this->hasMany('App\Order');}
+        return $this->hasMany('App\Order');
+    }
 
-        public function getGenderNameAttribute()
-        {
-            $genders = [
-                'F' => 'Femenino',
-                'M' => 'Masculino',
-                'U' => 'Desconocido'
-            ];
-    
-            return $genders[$this->gender] ?? 'Desconocido';
-        }
+    public function getGenderNameAttribute()
+    {
+        $genders = [
+            'F' => 'Femenino',
+            'M' => 'Masculino',
+            'U' => 'Desconocido'
+        ];
+
+        return $genders[$this->gender] ?? 'Desconocido';
+    }
 
     /*
         public function gender(){
