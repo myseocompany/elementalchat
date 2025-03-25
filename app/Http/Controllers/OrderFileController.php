@@ -2,7 +2,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\OrderFile;
+use App\Models\OrderFile;
 use Illuminate\Support\Facades\Storage;
 
 class OrderFileController extends Controller
