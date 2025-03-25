@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Campaign;
+use Illuminate\Support\Facades\Log;
+
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use DB;
@@ -20,6 +23,7 @@ use App\Models\ProductType;
 use App\Models\OrderProduct;
 use App\Models\OrderReason;
 use App\Models\Payment;
+use App\Services\WAToolboxService;
 use Illuminate\Support\Facades\Cookie;
 
 
@@ -479,6 +483,26 @@ class OrderController extends Controller
         $model->unique_machine = $cookieValue;
     
         $model->save();
+        
+        if ($model->wasChanged('status_id')) {
+            \Log::info('status=>'. $model->status_id );
+            try {
+                if ($model->status_id == 3) {
+                    $this->sendCampaign(7, $model->customer_id);
+                }
+                if ($model->status_id == 4) {
+                    $this->sendCampaign(8, $model->customer_id);
+                }
+                if ($model->status_id == 2) {
+                    $this->sendCampaign(6, $model->customer_id);
+                }
+                if ($model->status_id == 11) {
+                    $this->sendCampaign(9, $model->customer_id);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error al enviar la campaña: ' . $e->getMessage());
+            }
+        }
     
         return redirect('/orders/' . $model->id . '/show');
     }
@@ -535,6 +559,62 @@ class OrderController extends Controller
         return $cookie;
     }
 
+    public function sendCampaign($campaign_id, $customer_id)
+    {
 
+        $campaign = Campaign::find($campaign_id);
+        if (!$campaign) {
+            return;
+        }
+
+        \Log::info('campaign=>' , [$campaign] );
+
+        $user = User::find(Auth::id());
+        $this->defaultMessageSource = $user?->getDefaultMessageSource();
+        
+        if ($this->defaultMessageSource) {
+            //logger('reacched');
+            $this->waToolboxService = new WAToolboxService($this->defaultMessageSource);
+            
+        
+        }
+
+
+        $customer = Customer::find($customer_id);
+        if (!$customer) {
+            return;
+        }
+
+        $phone = $customer->getPhone();
+        if (empty($phone)) {
+            return;
+        }
+
+        // 🔍 Evitar mensajes duplicados
+        $sent_texts = [];
+        
+        \Log::info("campaign->messages: " ,[ $campaign->messages ]);
+
+        foreach ($campaign->messages as $message) {
+            if (empty($message->text) || in_array($message->text, $sent_texts)) {
+                continue;
+            }
+
+            $sent_texts[] = $message->text; // Guardar texto para evitar repetidos
+
+            $payload = [
+                'phone_number' => $phone,
+                'message' => $message->text,
+                'action' => 'send-message',
+                'type' => 'text',
+            ];
+
+            try {
+                $this->waToolboxService->sendMessageToWhatsApp($payload);
+            } catch (\Exception $e) {
+                \Log::error("Error enviando mensaje en sendCampaign: " . $e->getMessage());
+            }
+        }
+    }
     
 }

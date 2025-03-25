@@ -72,4 +72,17 @@ class AudienceCustomerManager extends Component
         ]);
 }
 
+public function removeCustomerFromAudience($customerId)
+{
+    DB::table('audience_customer')
+        ->where('audience_id', $this->audienceId)
+        ->where('customer_id', $customerId)
+        ->delete();
+
+    
+
+    session()->flash('message', 'Cliente eliminado de la audiencia.');
+}
+
+
 }

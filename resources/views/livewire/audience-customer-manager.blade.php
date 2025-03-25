@@ -51,6 +51,8 @@
                     <th class="px-6 py-3">Teléfono</th>
                     <th class="px-6 py-3">Nota</th>
                     <th class="px-6 py-3">Última acción</th>
+                    <th class="px-6 py-3">Acciones</th>
+                    
                 </tr>
             </thead>
             <tbody>
@@ -71,6 +73,15 @@
                                    value="{{ $ac->note }}">
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-400">{{ $cust->updated_at->diffForHumans() }}</td>
+                    
+                        <td class="px-6 py-4">
+                            <button wire:click="removeCustomerFromAudience({{ $cust->id }})"
+                                    wire:loading.attr="disabled"
+                                    wire:key="remove-{{ $cust->id }}"
+                                    class="text-red-600 hover:underline text-sm">
+                                Eliminar
+                            </button>
+                        </td>
                     </tr>
                 @empty
                     <tr>

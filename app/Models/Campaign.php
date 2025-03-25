@@ -14,7 +14,9 @@ class Campaign extends Model{
         return $this->belongsToMany('App\Models\CustomerMetaData','campaign_customer_meta_data','campaign_id','customer_meta_data_id'); //
     }
 
-    
+    function messages(){
+        return $this->hasMany('App\Models\CampaignMessage', 'campaign_id', 'id');
+    } 
 
 	
 }
