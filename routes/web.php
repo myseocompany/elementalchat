@@ -283,7 +283,7 @@ Route::middleware('auth')->prefix('orders')->group(function () {
 
     //Route::post('/storeproduct', [OrderController::class, 'storeProduct']);
     
-    
+});    
 
 
 Route::middleware('auth')->prefix('products')->group(function () {
