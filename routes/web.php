@@ -283,9 +283,12 @@ Route::middleware('auth')->prefix('orders')->group(function () {
 
     //Route::post('/storeproduct', [OrderController::class, 'storeProduct']);
     
-    Route::post('/products/store', [OrderController::class, 'storeProduct']);
-});
+    
 
+
+Route::middleware('auth')->prefix('products')->group(function () {
+    Route::post('/store', [OrderController::class, 'storeProduct']);
+});
 // Order Transaction Routes
 Route::middleware('auth')->prefix('orders/transactions')->group(function () {
     Route::get('/{id}/destroy', [OrderTransactionController::class, 'destroy']);
