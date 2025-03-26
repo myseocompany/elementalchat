@@ -30,6 +30,7 @@ use App\Models\Reference;
 use App\Models\RdStation;
 //use Illuminate\Support\Facades\Http;
 use App\Models\RequestLog;
+use Illuminate\Support\Facades\Log;
 
 class APIController extends Controller
 {
@@ -1204,6 +1205,7 @@ class APIController extends Controller
     {
 
         $this->saveLogFromRequest($request);
+        Log::info('Evento saveAPI recivido:', ['request' => $request]);
 
 
         // vericamos que no se inserte 2 veces
