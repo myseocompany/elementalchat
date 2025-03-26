@@ -82,12 +82,14 @@ class WAToolBoxController extends Controller{
             ]);
             $sender->save();
             $isNewCustomer = true;
+            Log::info('Creando cliente');
         } else {
             // Si existe y no tiene nombre, lo actualizamos
             if (empty($sender->name) && !empty($validatedData['name'])) {
                 $sender->name = $validatedData['name'];
                 $sender->save();
             }
+            
         }
                         
 
