@@ -137,7 +137,7 @@
 						<label class="col-6">Cumpleaños:</label>
 						<div readonly id="" name="" class="col-6" value="{{$model->birthday}}">
               {{$model->birthday}}
-            @if($model->birthday_updated) Actulizado @endif
+            @if($model->birthday_updated) Actualizado @endif
             </div>
 					</div>
 				</div>
