@@ -170,7 +170,6 @@ Route::middleware('auth')->prefix('api')->group(function () {
     Route::get('/update_lead_score', [APIController::class, 'saveFromRD2']);
     Route::post('/update_lead_score', [APIController::class, 'saveFromRD2']);
 });
-Route::get('/products/{id}/show', [ProductController::class, 'show']);
 Route::get('api/customers/saveCustomer', [APIController::class, 'saveApi'])->withoutMiddleware(['auth']);
 Route::post('api/customers/update', [APIController::class, 'updateFromRD'])->withoutMiddleware(['auth'])->name('updateRD');
 
@@ -285,10 +284,6 @@ Route::middleware('auth')->prefix('orders')->group(function () {
     
 });    
 
-
-Route::middleware('auth')->prefix('products')->group(function () {
-    Route::post('/', [ProductController::class, 'store']);
-});
 // Order Transaction Routes
 Route::middleware('auth')->prefix('orders/transactions')->group(function () {
     Route::get('/{id}/destroy', [OrderTransactionController::class, 'destroy']);
@@ -299,7 +294,7 @@ Route::middleware('auth')->prefix('orders/transactions')->group(function () {
 
 // Product Routes
 Route::middleware('auth')->prefix('products')->group(function () {
-    Route::get('/', [ProductController::class, 'index'])->name('products');
+    Route::get('/', [ProductController::class, 'index'])->name('products.index');
     Route::get('/show/{id}', [ProductController::class, 'show'])->name('product-show');
     Route::get('/create', [ProductController::class, 'create']);
     Route::post('/store', [ProductController::class, 'store']);
@@ -307,6 +302,9 @@ Route::middleware('auth')->prefix('products')->group(function () {
     Route::put('/{id}', [ProductController::class, 'show']);
     Route::get('/{id}/edit', [ProductController::class, 'edit']);
     Route::post('/edit/{id}', [ProductController::class, 'update']);
+    Route::post('/', [ProductController::class, 'store']);
+    Route::get('/{id}/show', [ProductController::class, 'show']);
+
 });
 
 // Import Routes
