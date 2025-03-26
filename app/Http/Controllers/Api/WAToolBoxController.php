@@ -73,7 +73,7 @@ class WAToolBoxController extends Controller{
         }
             */
         $sender = Customer::findByNormalizedPhone($validatedData['phone']);
-
+        Log::info('sender', [$sender]);
         if (!$sender) {
             // Si no existe, lo creamos
             $sender = new Customer([
