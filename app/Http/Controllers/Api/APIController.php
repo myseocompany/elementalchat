@@ -1202,6 +1202,61 @@ class APIController extends Controller
 
     public function saveAPI(Request $request)
     {
+
+        $this->saveLogFromRequest($request);
+
+
+        // vericamos que no se inserte 2 veces
+        $count = $this->isEqual($request);
+        $similar = $this->getSimilar($request);
+
+
+        if (is_null($count) || ($count == 0)) {
+            // verificamos uno similar
+
+
+            if ($similar->count() == 0) {
+                $model = $this->saveAPICustomer($request);
+                $this->storeActionAPI($request, $model->id);
+            } else {
+
+                $model = $similar[0];
+                
+                $this->storeActionAPI($request, $model->id);
+                $this->updateCreateDate($request, $model->id);
+            }
+        } else {
+            $model = $similar[0];
+            if ($model && $model->status_id == 1) { //miro si está nuevo
+
+
+                $cHistory = new CustomerHistory;
+                $cHistory->saveFromModel($model);
+                //$model->status_id  = 1; // se cambia a nuevo 1
+                $model->save();
+            }
+
+            if (($model->name == null) && (isset($request->name))) {
+                $model->name = $request->name;
+                $model->save();
+            }
+
+
+
+
+            $this->storeActionAPI($request, $similar[0]->id);
+
+
+            if (isset($request->session_id)) {
+
+                $model = Customer::where("email", $request->email)->first();
+                $this->saveSession($model->id, $request->session_id);
+            }
+        }
+    }
+
+    public function saveAPI2(Request $request)
+    {
         $this->saveLogFromRequest($request);
         // vericamos que no se inserte 2 veces
        
@@ -1209,7 +1264,7 @@ class APIController extends Controller
         
         $similar = $this->getSimilar($request);
 
-        dd($similar);
+        //dd($similar);
 
         if (is_null($count) || ($count == 0)) {
             // verificamos uno similar
