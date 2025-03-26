@@ -60,6 +60,13 @@
 
         </div>
       </div>
+      <div class="col-sm-3">
+        <div class="form-group">
+            <label for="birthday_updated">¿Cumpleaños actualizado manualmente?</label><br>
+            <input type="checkbox" id="birthday_updated" name="birthday_updated" value="1"
+                   @if(isset($model->birthday_updated) && $model->birthday_updated) checked @endif>
+        </div>
+    </div>
 
 
       <div class="col-sm-3">

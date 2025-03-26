@@ -1000,6 +1000,8 @@ class CustomerController extends Controller
         $model->phone = $request->phone;
         $model->email = $request->email;
         $model->notes = $request->notes;
+        $model->birthday_updated = $request->birthday_updated;
+        
 
         $model->pathology = $request->pathology;
         $model->hobbie = $request->hobbie;

@@ -135,7 +135,10 @@
         <div class="col-md-12 col-sm-12">
 					<div class="row">
 						<label class="col-6">Cumpleaños:</label>
-						<div readonly id="" name="" class="col-6" value="{{$model->birthday}}">{{$model->birthday}}</div>
+						<div readonly id="" name="" class="col-6" value="{{$model->birthday}}">
+              {{$model->birthday}}
+            @if($model->birthday_updated) Actulizado @endif
+            </div>
 					</div>
 				</div>
 			</div>
