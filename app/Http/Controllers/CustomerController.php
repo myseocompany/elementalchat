@@ -110,6 +110,7 @@ class CustomerController extends Controller
         $statuses = $this->getStatuses($request, 1);
         $phase_id = 0;
         //$model = $this->getModel($request, $statuses, $phase_id, 50);
+        $rfm_groups = RfmGroup::all();
         
         $model = $this->customerService->filterCustomers($request, $statuses, $phase_id, false, 5);
         
@@ -117,12 +118,13 @@ class CustomerController extends Controller
         //dd($customersGroup);
         $projects = Project::all();
 
+        
         $sources = CustomerSource::orderby('name')->get();
 
         //$pending_actions = $this->getPendingActions();
 
         
-        return view('customers.index', compact('model', 'request', 'customer_options', 'customersGroup', 'users', 'sources', 'projects'));
+        return view('customers.index', compact('model', 'request', 'rfm_groups', 'customer_options', 'customersGroup', 'users', 'sources', 'projects'));
     }
 
 

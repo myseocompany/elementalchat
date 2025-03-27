@@ -33,6 +33,9 @@ class CustomerService {
                 if (!empty($request->user_id)) {
                     $query->where('customers.user_id', $request->user_id === "null" ? null : $request->user_id);
                 }
+                if (!empty($request->rfm_group_id)) {
+                    $query->where('customers.rfm_group_id', $request->rfm_group_id === "null" ? null : $request->rfm_group_id);
+                }
 
                 if (isset($request->maker)) {
                     is_numeric($request->maker) ? 
