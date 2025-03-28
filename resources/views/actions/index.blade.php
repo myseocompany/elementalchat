@@ -58,19 +58,25 @@ Registro <strong>{{ $model->currentPage()*$model->perPage() - ( $model->perPage(
 			
 			
 			<td>
-        <div>@if(isset($item->customer->status))
-        <span class="badge" style="background-color: {{$item->customer->status->color}} ">
-        {{$item->customer->status->name}} 
-         </span> 
-        @endif</div>
         <div>
-        @if($item->isPending()) 🙋‍♂️ Pendiente 
+          @if(isset($item->customer->status))
+            <span class="badge" style="background-color: {{$item->customer->status->color}} ">{{$item->customer->status->name}}</span> 
+          @endif
+        </div>
+        <div>
+          @if($item->isPending()) 🙋‍♂️ Pendiente 
+          @endif  
+          @if(isset($item->customer))
+            <a href="/customers/{{$item->customer->id}}/show">
+              {{$item->created_at}} -   {{$item->getTypeName()}} 
+            </a>
+          @endif  
+        </div>
+        @if(isset($item->customer))
+          <a href="/customers/{{$item->customer_id}}/show">
+            <h4> {{$item->getCustomerName()}}</h4>
+          </a>
         @endif  
-        <a href="/customers/{{$item->customer->id}}/show">
-{{$item->created_at}} -   {{$item->getTypeName()}} </a></div>
-        <a href="/customers/{{$item->customer_id}}/show">
-          <h4> {{$item->getCustomerName()}}</h4>
-        </a>
         <div class="action_note">{{$item->note}}</div>
         <div class="action_created"></div>
         <div class="row">
@@ -78,7 +84,6 @@ Registro <strong>{{ $model->currentPage()*$model->perPage() - ( $model->perPage(
             @if(isset($item->customer))
           <div class="col">
             <a href="/customers/{{$item->customer->id}}/show">{{$item->customer->phone}}</a>
-
           </div>
           <div class="col">{{$item->customer->email}}</div>
           
