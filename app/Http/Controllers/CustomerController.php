@@ -934,7 +934,8 @@ class CustomerController extends Controller
     {
 
         $model = Customer::find($id);
-        $actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
+        //$actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
+        $actions = NULL;
         $action_options = ActionType::orderBy("weight", "ASC")->get();
         $histories = CustomerHistory::where('customer_id', '=', $id)->get();
         $email_options = Email::all();
@@ -942,8 +943,8 @@ class CustomerController extends Controller
         $actual = true;
         $today = Carbon\Carbon::now();
 
-        $pending_action = Action::find($request->pending_action_id);
-
+        //$pending_action = Action::find($request->pending_action_id);
+        $pending_action = NULL;
 
         return view('customers.show', compact('model', 'histories', 'actions', 'action_options', 'email_options', 'statuses_options', 'actual', 'today', 'pending_action'));
     }
