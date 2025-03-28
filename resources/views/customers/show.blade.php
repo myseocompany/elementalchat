@@ -623,6 +623,7 @@
     
   </thead>
   <tbody>
+    @if(isset($actions)&&($actions != NULL))
     @foreach($actions as $item)
     @if($item->status_id==1)
 
@@ -669,6 +670,7 @@
     </tr>
     @endif
     @endforeach
+    @endif
     
   </tbody>
 </table>
