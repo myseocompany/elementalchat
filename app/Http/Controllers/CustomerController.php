@@ -935,8 +935,8 @@ class CustomerController extends Controller
 
         $model = Customer::find($id);
         //dd($id);
-        //$actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
-        $actions = NULL;
+        $actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
+        //$actions = NULL;
         $action_options = ActionType::orderBy("weight", "ASC")->get();
         $histories = CustomerHistory::where('customer_id', '=', $id)->get();
         $email_options = Email::all();
