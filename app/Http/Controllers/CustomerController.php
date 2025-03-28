@@ -934,7 +934,7 @@ class CustomerController extends Controller
     {
 
         $model = Customer::find($id);
-        dd($id);
+        //dd($id);
         //$actions = Action::where('customer_id', '=', $id)->orderby("created_at", "DESC")->get();
         //$actions = NULL;
         $action_options = ActionType::orderBy("weight", "ASC")->get();
