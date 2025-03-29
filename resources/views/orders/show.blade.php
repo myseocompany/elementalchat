@@ -69,7 +69,7 @@
 				
 			</div>
 		</div>
-		@endif
+		
 
 
 		<div class="col-md-4 col-sm-12 group-container">
@@ -232,6 +232,7 @@
 				<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 				<div id="map" style="width: 100%; height: 400px;"></div>
 				<script>
+					@endif
     @if($model->latitude && $model->longitude)
     // Inicializar el mapa solo si hay latitud y longitud
     var map = L.map('map').setView([{{$model->latitude}}, {{$model->longitude}}], 15);
