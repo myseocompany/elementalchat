@@ -278,6 +278,8 @@ Route::middleware('auth')->prefix('orders')->group(function () {
     Route::get('/{id}/quote', [OrderController::class, 'quote']);
     Route::get('/{id}/edit', [OrderController::class, 'edit']);
     Route::get('/{id}/destroy', [OrderController::class, 'destroy']);
+    Route::get('/{id}/delete', [OrderController::class, 'delete']);
+    
     Route::post('/payment/store', [OrderController::class, 'storePayment']);
 
     //Route::post('/storeproduct', [OrderController::class, 'storeProduct']);
