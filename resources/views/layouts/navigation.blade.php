@@ -13,7 +13,11 @@
                 <a href="/" class="text-gray-700 hover:text-blue-600 font-medium">Inicio</a>
                 
                 @auth
-                    @if(Auth::user()->role_id == 1)
+                    @php
+                        $isAdmin = in_array(Auth::user()->role_id, [1, 9]);
+                    @endphp
+  
+                    @if($isAdmin)
                         <a href="/chats" class="text-gray-700 hover:text-blue-600 font-medium">Inbox</a>
                         <a href="/customers/phase/1" class="text-gray-700 hover:text-blue-600 font-medium">Contactos</a>
                         <a href="/orders" class="text-gray-700 hover:text-blue-600 font-medium">Órdenes</a>
@@ -44,7 +48,7 @@
                         </button>
                         <div x-show="open" @click.away="open = false"
                              class="absolute mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded z-50">
-                            @if (Auth::user()->role_id == 1)
+                            @if ($isAdmin)
                                 <a href="/config" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Configuración</a>
                             @endif
                             <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
@@ -87,7 +91,7 @@
          class="md:hidden px-4 pb-4 bg-white shadow-md border-t border-gray-200">
         <a href="/" class="block py-2 text-gray-700 hover:text-blue-600">Inicio</a>
         @auth
-            @if(Auth::user()->role_id == 1)
+            @if($isAdmin)
                 <a href="/chats" class="block py-2 text-gray-700 hover:text-blue-600">Inbox</a>
                 <a href="/customers/phase/1" class="block py-2 text-gray-700 hover:text-blue-600">Contactos</a>
                 <a href="/orders" class="block py-2 text-gray-700 hover:text-blue-600">Órdenes</a>
