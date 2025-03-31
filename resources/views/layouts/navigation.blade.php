@@ -38,10 +38,15 @@
                 @endauth
             </div>
   
-            <!-- Right side (auth + search) -->
+            <!-- Right side -->
             <div class="flex items-center space-x-4">
                 @auth
-                    <!-- Desktop logout dropdown -->
+                    <!-- Nombre del usuario siempre visible -->
+                    <span class="block md:hidden text-blue-600 font-medium">
+                        {{ Auth::user()->name }}
+                    </span>
+  
+                    <!-- Dropdown solo en desktop -->
                     <div class="hidden md:block relative" x-data="{ open: false }">
                         <button @click="open = !open" class="text-blue-600 font-medium focus:outline-none">
                             {{ Auth::user()->name }}
