@@ -11,7 +11,7 @@
             <!-- Desktop Links -->
             <div class="hidden md:flex space-x-6 items-center">
                 <a href="/" class="text-gray-700 hover:text-blue-600 font-medium">Inicio</a>
-                
+  
                 @auth
                     @if(Auth::user()->role_id == 1)
                         <a href="/chats" class="text-gray-700 hover:text-blue-600 font-medium">Inbox</a>
@@ -89,6 +89,7 @@
     <div x-show="mobileMenuOpen"
          class="md:hidden px-4 pb-4 bg-white shadow-md border-t border-gray-200">
         <a href="/" class="block py-2 text-gray-700 hover:text-blue-600">Inicio</a>
+  
         @auth
             @if(Auth::user()->role_id == 1)
                 <a href="/chats" class="block py-2 text-gray-700 hover:text-blue-600">Inbox</a>
@@ -101,6 +102,14 @@
             @elseif(Auth::user()->role_id == 9)
                 <a href="/orders" class="block py-2 text-gray-700 hover:text-blue-600">Órdenes</a>
             @endif
+  
+            <!-- Logout link in mobile -->
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="w-full text-left py-2 text-gray-700 hover:text-blue-600">
+                    Salir
+                </button>
+            </form>
         @endauth
     </div>
   </nav>
