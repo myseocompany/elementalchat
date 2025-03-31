@@ -29,7 +29,9 @@
 <tr class="order_row">
   
   <td>
-    <div><strong>OrderID:</strong> {{$item->id}} @if(isset($item->user))<strong>Atendido por</strong> {{$item->user->name}}@endif</div>
+    <div><strong>OrderID:</strong> 
+      <a href="/orders/{{$item->id}}/show">{{$item->id}} </a>
+        @if(isset($item->user))<strong>Atendido por</strong> {{$item->user->name}}@endif</div>
     <div>{{$item->delivery_address}}</div>
     <div><a href="/products/{{$item->product_id}}/show">{{$item->name}}</a></div>
     <div>@if(isset($item->customer))

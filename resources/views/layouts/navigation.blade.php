@@ -19,6 +19,7 @@
                       <a href="/orders" class="text-gray-700 hover:text-blue-600 font-medium">Órdenes</a>
                       <a href="/products" class="text-gray-700 hover:text-blue-600 font-medium">Productos</a>
                       <a href="https://panel.smartchatapp.online/" class="text-gray-700 hover:text-blue-600 font-medium">Bot</a>
+                      <a href="/actions" class="text-gray-700 hover:text-blue-600 font-medium">Acciones</a>
                       <!-- Dropdown -->
                       <div x-data="{ open: false }" class="relative">
                           <button @click="open = !open" class="text-gray-700 hover:text-blue-600 font-medium focus:outline-none">
@@ -29,6 +30,17 @@
                               <a href="/audiences/1/customers" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Magistrales</a>
                               <a href="/audiences/2/customers" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Terminados</a>
                               <a href="/audiences/3/customers" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Descuento</a>
+                          </div>
+                      </div>
+                      <div x-data="{ open: false }" class="relative">
+                          <button @click="open = !open" class="text-gray-700 hover:text-blue-600 font-medium focus:outline-none">
+                              Reportes
+                          </button>
+                          <div x-show="open" @click.away="open = false"
+                               class="absolute mt-2 w-40 bg-white border border-gray-200 shadow-lg rounded z-50">
+                              <a href="/bi/newcustomers" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Clientes nuevos</a>
+                              <a href="/bi/purchasefrequency" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Frecuencia de Compra</a>
+                              <a href="/bi/averageTicket" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Ticket Promedio</a>
                           </div>
                       </div>
                   @endif
