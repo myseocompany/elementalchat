@@ -31,6 +31,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CustomerUnsubscribesController;
 use App\Http\Controllers\BIController;
+use App\Http\Controllers\LandingController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
@@ -433,3 +434,6 @@ Route::post('/rdtest', [RDTestController::class, 'handleRequest'])->name('rdtest
 // Rutas para subir y eliminar archivos de órdenes
 Route::post('/order-files/store', [OrderFileController::class, 'store'])->name('order-files.store');
 Route::post('/order-files/delete/{id}', [OrderFileController::class, 'delete'])->name('order-files.delete');
+
+
+Route::get('/landing', [LandingController::class,'productList']);
