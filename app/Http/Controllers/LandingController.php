@@ -61,7 +61,7 @@ class LandingController extends Controller
         // Paso 4: Codificar el mensaje para URL
         $encodedMessage = urlencode($message);
 
-        $fallback = $this->sendMessage($phone, $message);
+        //$fallback = $this->sendMessage($phone, $message);
         //dd($fallback);
         // Crear la URL de wa.me con tu número de tienda
         // Depuración: mostrar el mensaje y la URL
