@@ -62,11 +62,11 @@ class LandingController extends Controller
         $encodedMessage = urlencode($message);
 
         $fallback = $this->sendMessage($phone, $message);
-        dd($fallback);
+        //dd($fallback);
         // Crear la URL de wa.me con tu número de tienda
         // Depuración: mostrar el mensaje y la URL
-        dd(compact('message', 'whatsAppUrl'));
-        // $whatsAppUrl = "https://wa.me/573142132987?text={$encodedMessage}"; // Reemplaza 573142132987 con tu número de tienda
+        //dd(compact('message', 'whatsAppUrl'));
+         $whatsAppUrl = "https://wa.me/573142132987?text={$encodedMessage}"; // Reemplaza 573142132987 con tu número de tienda
 
         // Redirigir al usuario a WhatsApp
         return redirect()->away($whatsAppUrl);
