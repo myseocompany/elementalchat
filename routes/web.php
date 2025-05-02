@@ -437,3 +437,13 @@ Route::post('/order-files/delete/{id}', [OrderFileController::class, 'delete'])-
 
 
 Route::get('/landing', [LandingController::class,'productList']);
+
+
+//NPS
+Route::get('/nps/create/{id}/{cid}', [MetaDataController::class, 'createNps'])->name('nps.create');
+
+Route::get('/metadata/{id}/create/nps/{cid}', [MetaDataController::class, 'createNPS']);
+Route::get('/nps/{phone}', [MetaDataController::class, 'findNPS']);
+Route::post('/metadata/{id}/store/nps', [MetaDataController::class, 'storeNPS']);
+
+Route::get('/nps/thanks')->name('nps.thanks');

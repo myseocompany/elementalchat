@@ -389,28 +389,72 @@ public function storepoe(request $request, $id){
 
 
 
-public function surveyReport($id){
+    public function surveyReport($id){
 
-    $audience = Audience::find($id);     
-    
-    $customer = AudienceCustomer::leftJoin('customer_metas', 'customer_metas.customer_id', 'audience_customer.customer_id')
-    ->select(DB::raw('distinct(customer_metas.customer_id) as customer_id'))
-    ->where('audience_customer.audience_id', '=', $id)
-    ->get();
-
-    $meta_data = CustomerMetaData::all();
-
-    $metas = CustomerMetaData:: leftJoin('customer_metas', 'customer_meta_datas.id', 'customer_metas.meta_data_id')
-        ->leftJoin('audience_customer', 'customer_metas.customer_id', 'audience_customer.customer_id')
-        ->select('customer_meta_datas.value as name', 'customer_meta_datas.parent_id',
-        DB::raw('COUNT(customer_metas.meta_data_id) as countask'),
-        DB::raw( '(SUM(customer_metas.VALUE)/COUNT(customer_metas.meta_data_id)) as average'))
-        ->groupBy('customer_metas.meta_data_id', 'customer_meta_datas.value', 'customer_meta_datas.parent_id')
+        $audience = Audience::find($id);     
+        
+        $customer = AudienceCustomer::leftJoin('customer_metas', 'customer_metas.customer_id', 'audience_customer.customer_id')
+        ->select(DB::raw('distinct(customer_metas.customer_id) as customer_id'))
         ->where('audience_customer.audience_id', '=', $id)
         ->get();
+
+        $meta_data = CustomerMetaData::all();
+
+        $metas = CustomerMetaData:: leftJoin('customer_metas', 'customer_meta_datas.id', 'customer_metas.meta_data_id')
+            ->leftJoin('audience_customer', 'customer_metas.customer_id', 'audience_customer.customer_id')
+            ->select('customer_meta_datas.value as name', 'customer_meta_datas.parent_id',
+            DB::raw('COUNT(customer_metas.meta_data_id) as countask'),
+            DB::raw( '(SUM(customer_metas.VALUE)/COUNT(customer_metas.meta_data_id)) as average'))
+            ->groupBy('customer_metas.meta_data_id', 'customer_meta_datas.value', 'customer_meta_datas.parent_id')
+            ->where('audience_customer.audience_id', '=', $id)
+            ->get();
+        
+        return view('surveys.survey_report', compact('audience', 'customer', 'meta_data', 'metas'));
+
+
+    }
+
+    public function createNPS($id, $cid){
+
+        $model = Customer::find($id);
+        
+        $campaign = Campaign::find($cid);
+       
+        return view('NPS.create', compact('model','campaign'));
+    }
     
-    return view('surveys.survey_report', compact('audience', 'customer', 'meta_data', 'metas'));
-
-
-}
+    public function findNPS($phone)
+    {
+        // Primero, intentamos buscar el número tal como llega
+        $model = Customer::where('phone', $phone)->first();
+    
+        // Si no se encuentra y el número comienza con '57', intentamos sin el prefijo
+        if (!$model && substr($phone, 0, 2) === '57') {
+            $phoneWithoutPrefix = substr($phone, 2); // Elimina el prefijo '57'
+            $model = Customer::where('phone', $phoneWithoutPrefix)->first();
+        }
+    
+        $campaign = 5;
+    
+        return view('NPS.create', compact('model', 'campaign'));
+    }
+    
+    public function storeNPS($id, Request $request)
+    {
+        // Validar que se reciba el valor del NPS
+        $request->validate([
+            'nps' => 'required|integer|min:1|max:10', // Validación del valor entre 1 y 10
+        ]);
+    
+        // Crear un nuevo registro en la tabla `customer_metadatas`
+        $meta_data = new CustomerMetaDatas();
+        $meta_data->customer_id = $id; // ID del cliente
+        $meta_data->customer_metadata_semantic_id = 31; // ID de la pregunta en la tabla `customer_metadata_semantics`
+        $meta_data->value = $request->nps; // Valor recibido del formulario
+    
+        $meta_data->save(); // Guardar los datos
+    
+        // Redirigir a una página (puedes ajustarla según tu flujo)
+        return view('NPS.thanks');
+    }
 }
