@@ -448,7 +448,7 @@ public function storepoe(request $request, $id){
 
         // Crear un nuevo registro en la tabla `customer_meta_datas`
         $meta_data = new CustomerMetaData();
-        $meta_data->customer_id = $id; // ID del cliente
+        $meta_data->parent_id = $id; // ID del cliente
         $meta_data->type_id = 31; // Tipo de dato (en este caso, NPS)
         $meta_data->value = $request->nps; // Valor del NPS
 
