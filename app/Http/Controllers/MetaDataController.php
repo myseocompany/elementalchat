@@ -443,18 +443,19 @@ public function storepoe(request $request, $id){
     {
         // Validar que se reciba el valor del NPS
         $request->validate([
-            'nps' => 'required|integer|min:1|max:10', // Validación del valor entre 1 y 10
+            'nps' => 'required|integer|min:1|max:10',
         ]);
-    
-        // Crear un nuevo registro en la tabla `customer_metadatas`
-        $meta_data = new CustomerMetaDatas();
+
+        // Crear un nuevo registro en la tabla `customer_meta_datas`
+        $meta_data = new CustomerMetaData();
         $meta_data->customer_id = $id; // ID del cliente
-        $meta_data->customer_metadata_semantic_id = 31; // ID de la pregunta en la tabla `customer_metadata_semantics`
-        $meta_data->value = $request->nps; // Valor recibido del formulario
-    
-        $meta_data->save(); // Guardar los datos
-    
-        // Redirigir a una página (puedes ajustarla según tu flujo)
+        $meta_data->type_id = 31; // Tipo de dato (en este caso, NPS)
+        $meta_data->value = $request->nps; // Valor del NPS
+
+        $meta_data->save(); // Guardar en base de datos
+
+        // Redirigir o mostrar una vista de agradecimiento
         return view('NPS.thanks');
     }
+
 }

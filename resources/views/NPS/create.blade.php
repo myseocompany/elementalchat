@@ -81,8 +81,22 @@
     
     
     <div class="logo-container"></div>
-    <div class="span">
+    <!-- <div class="span">
         <span>{{$model->name}} gracias por ayudarnos a mejorar. Esta breve encuesta nos permitirá conocer tu opinión y mejorar nuestra calidad de servicio.</span>
+    </div>
+     -->
+    <div class="why-container">
+        <h3>Queremos saber qué te hizo elegirnos y que piensas de nosotros</h3> <br>
+        <div class="content">
+            <div class="text-container">
+                <span>{{$model->name}} gracias por ayudarnos a mejorar. Esta breve encuesta nos permitirá conocer tu opinión y mejorar nuestra calidad de servicio. Tu experiencia nos importa. Saber tu opinión nos ayuda a mejorar y seguir ofreciéndote el servicio que mereces.</span>
+            </div>
+            <div class="text-area">
+                <label for="opinion">Déjanos tu opinión:</label>
+                <textarea name="opinion" id="opinion"></textarea>
+                <button type="submit">Enviar</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -90,6 +104,47 @@
     * {
         box-sizing: border-box;
         font-family: 'Helvetica Neue', sans-serif;
+    }
+    .text-area{
+        width: 40%;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        & button{
+            padding: 5px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: black;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+        }
+    }
+    .text-area textarea {
+        width: 70%;
+        height: 100px; 
+        resize: vertical; 
+        padding: 10px; 
+        font-size: 14px; 
+    }
+
+    .text-container{
+        width: 55%;
+        height: auto;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+    .content{
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: flex-start;
+        justify-content: center;
     }
     .all-content{
         width: 100%;
@@ -99,7 +154,7 @@
         align-items: center;
         justify-content: center;
     }
-    .span{
+    /* .span{
         margin-top: 20px;
         width: 100%;
         height: 40px;
@@ -108,6 +163,17 @@
         align-items: center;
         justify-content: center;
         text-align: center;
+    } */
+    .why-container{
+        width: 100%;
+        height: max-content;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 30px;  
     }
     .icon-bg-red {
         display: flex;
