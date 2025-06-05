@@ -117,7 +117,6 @@
 
   
   <ul class="groupbar bb_hbox" id="dashboard">
-  
     @foreach($customersGroup as $item)
     <li class="groupBarGroup" style="background-color: {{$item->status_color}}; width: <?php 
         if($customersGroup->count()!=0){
@@ -125,11 +124,16 @@
         }
      ?>%">
       <h3>{{$item->count}}</h3>
-     
-      <div><a href="#" onclick="changeStatus({{$item->id}})">{{$item->status_name}}</a></div>
+
+      <div>
+        <a href="#" onclick="changeStatus({{ $item->id ?? -1 }})">
+          {{ $item->status_name ?? 'Sin Estado...' }}
+        </a>
+      </div>
     </li>          
     @endforeach
-  </ul>
+</ul>
+
 
   <style>
       @media screen and (max-width: 992px) {
