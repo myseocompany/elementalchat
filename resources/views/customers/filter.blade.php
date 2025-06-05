@@ -18,7 +18,7 @@
 
    {{-- Combo de estados --}}
 <select name="status_id" class="slectpicker custom-select" id="status_id" onchange="submit();">
-      <option value="">Estado...</option>
+      <option value="">Estados...</option>
       @foreach($customer_options as $item)
         <option value="{{$item->id}}" @if ($request->status_id == $item->id) selected="selected" @endif>
            {{ $item->name }}
