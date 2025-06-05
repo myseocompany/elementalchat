@@ -154,8 +154,8 @@ Route::get('/action_type/{action}', 'ActionTypeController@getActionTypes');
 
 //NPS
 Route::get('/nps/create/{id}/{cid}', 'App\Http\Controllers\MetaDataController@createNps')->name('nps.create');
-Route::get('/nps/thanks')->name('nps.thanks');
 Route::get('/metadata/{id}/create/nps/{cid}', 'MetaDataController@createNPS');
+Route::get('/nps/thanks')->name('nps.thanks');
 Route::get('/nps/{phone}', 'MetaDataController@findNPS');
 Route::post('/metadata/{id}/store/nps', 'MetaDataController@storeNPS');
 

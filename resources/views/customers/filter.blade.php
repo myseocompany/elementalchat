@@ -1,6 +1,3 @@
-
-
-
 <form action="/customers/phase/{{$model->phase_id}}/" method="GET" id="filter_form">
   <input type="hidden" name="search" id="search" @if(isset($request->search))value="{{$request->search}}"@endif>
      <select name="filter" class="custom-select" id="filter" onchange="update()">
@@ -28,7 +25,8 @@
           
         </option>
       @endforeach
-    </select>
+      <option value="-1" @if ($request->status_id == -1) selected="selected" @endif>Sin estado...</option>
+</select>
 
 <!--RFM-->
 

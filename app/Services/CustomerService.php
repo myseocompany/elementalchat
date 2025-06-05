@@ -53,7 +53,15 @@ class CustomerService {
 
                 if (!empty($request->source_id)) $query->where('customers.source_id', $request->source_id);
                 if (!empty($request->country)) $query->where('customers.country', $request->country);
-                if (!empty($request->status_id)) $query->where('customers.status_id', $request->status_id);
+
+                if (isset($request->status_id)) {
+                    if ($request->status_id == -1) {
+                        $query->whereNull('customers.status_id');
+                    } else {
+                        $query->where('customers.status_id', $request->status_id);
+                    }
+                }
+
                 if (!empty($request->scoring_interest)) $query->where('customers.scoring_interest', $request->scoring_interest);
                 if (!empty($request->inquiry_product_id)) $query->where('customers.inquiry_product_id', $request->inquiry_product_id);
 
@@ -164,7 +172,15 @@ class CustomerService {
                 // Filtros adicionales de acuerdo con la entrada
                 if (!empty($request->source_id)) $query->where('customers.source_id', $request->source_id);
                 if (!empty($request->country)) $query->where('customers.country', $request->country);
-                if (!empty($request->status_id)) $query->where('customers.status_id', $request->status_id);
+                if (isset($request->status_id)) {
+                    if ($request->status_id == -1) {
+                        $query->whereNull('customers.status_id');
+                    } else {
+                        $query->where('customers.status_id', $request->status_id);
+                    }
+                    }
+
+
                 if (!empty($request->scoring_interest)) $query->where('customers.scoring_interest', $request->scoring_interest);
                 if (!empty($request->inquiry_product_id)) $query->where('customers.inquiry_product_id', $request->inquiry_product_id);
 
