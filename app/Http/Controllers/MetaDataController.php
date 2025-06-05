@@ -441,20 +441,30 @@ public function storepoe(request $request, $id){
     
     public function storeNPS($id, Request $request)
     {
-        // Validar que se reciba el valor del NPS
+        // Validar los datos recibidos
         $request->validate([
-            'nps' => 'required|integer|min:1|max:10', // Validación del valor entre 1 y 10
+            'nps' => 'required|integer|min:1|max:10',
+            'opinion' => 'nullable|string|max:255',
         ]);
-    
-        // Crear un nuevo registro en la tabla `customer_metadatas`
-        $meta_data = new CustomerMetaDatas();
-        $meta_data->customer_id = $id; // ID del cliente
-        $meta_data->customer_metadata_semantic_id = 31; // ID de la pregunta en la tabla `customer_metadata_semantics`
-        $meta_data->value = $request->nps; // Valor recibido del formulario
-    
-        $meta_data->save(); // Guardar los datos
-    
-        // Redirigir a una página (puedes ajustarla según tu flujo)
+
+        // Guardar valor NPS
+        $npsMeta = new CustomerMetaData();
+        $npsMeta->parent_id = $id;
+        $npsMeta->type_id = 31; // Tipo de dato para NPS
+        $npsMeta->value = $request->nps;
+        $npsMeta->save();
+
+        // Guardar la opinión, si existe
+        if (!empty($request->opinion)) {
+            $opinionMeta = new CustomerMetaData();
+            $opinionMeta->parent_id = $id;
+            $opinionMeta->type_id = 32; // Asigna un ID único para "opinión"
+            $opinionMeta->value = $request->opinion;
+            $opinionMeta->save();
+        }
+
         return view('NPS.thanks');
     }
+
+
 }

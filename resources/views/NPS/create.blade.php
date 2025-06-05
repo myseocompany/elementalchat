@@ -9,87 +9,138 @@
         </span>
     
         <div class="survey-container">
-        @if(isset($model))    
-        <form method="POST" action="/metadata/{{$model->id}}/store/nps" class="radio-tile-group">
-            {{ csrf_field() }}
-    
-            <div class="radio-tiles-wrapper">
-                @for($i = 1; $i <= 10; $i++)
-                    <div class="input-container">
-                        <input id="option{{$i}}" class="radio-button" type="radio" name="nps" value="{{$i}}">
-                        <div class="radio-tile" data-value="{{$i}}">
-                            <div class="icon @if($i <= 6) icon-bg-red @elseif($i <= 8) icon-bg-blue @else icon-bg-green @endif">
-                                @if($i >0 && $i <= 2)
-                                    <!-- emoji enojado -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-emoji-angry" viewBox="0 0 16 16">
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                        <path d="M4.285 12.433a.5.5 0 0 0 .683-.183A3.5 3.5 0 0 1 8 10.5c1.295 0 2.426.703 3.032 1.75a.5.5 0 0 0 .866-.5A4.5 4.5 0 0 0 8 9.5a4.5 4.5 0 0 0-3.898 2.25.5.5 0 0 0 .183.683m6.991-8.38a.5.5 0 1 1 .448.894l-1.009.504c.176.27.285.64.285 1.049 0 .828-.448 1.5-1 1.5s-1-.672-1-1.5c0-.247.04-.48.11-.686a.502.502 0 0 1 .166-.761zm-6.552 0a.5.5 0 0 0-.448.894l1.009.504A1.94 1.94 0 0 0 5 6.5C5 7.328 5.448 8 6 8s1-.672 1-1.5c0-.247-.04-.48-.11-.686a.502.502 0 0 0-.166-.761z"/>
-                                    </svg>
-                                @elseif($i > 2 && $i <= 4)
-                                    <!-- emoji super triste -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-emoji-tear" viewBox="0 0 16 16">
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                        <path d="M6.831 11.43A3.1 3.1 0 0 1 8 11.196c.916 0 1.607.408 2.25.826.212.138.424-.069.282-.277-.564-.83-1.558-2.049-2.532-2.049-.53 0-1.066.361-1.536.824q.126.27.232.535.069.174.135.373ZM6 11.333C6 12.253 5.328 13 4.5 13S3 12.254 3 11.333c0-.706.882-2.29 1.294-2.99a.238.238 0 0 1 .412 0c.412.7 1.294 2.284 1.294 2.99M7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5m4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5m-1.5-3A.5.5 0 0 1 10 3c1.162 0 2.35.584 2.947 1.776a.5.5 0 1 1-.894.448C11.649 4.416 10.838 4 10 4a.5.5 0 0 1-.5-.5M7 3.5a.5.5 0 0 0-.5-.5c-1.162 0-2.35.584-2.947 1.776a.5.5 0 1 0 .894.448C4.851 4.416 5.662 4 6.5 4a.5.5 0 0 0 .5-.5"/>
-                                    </svg>
-                                @elseif($i > 4 && $i <= 6)
-                                    <!-- Emoji triste -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#ff6b6b" class="bi bi-emoji-frown" viewBox="0 0 16 16">
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                        <path d="M4.285 12.433a.5.5 0 0 0 .683-.183A3.5 3.5 0 0 1 8 10.5c1.295 0 2.426.703 3.032 1.75a.5.5 0 0 0 .866-.5A4.5 4.5 0 0 0 8 9.5a4.5 4.5 0 0 0-3.898 2.25.5.5 0 0 0 .183.683M7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5m4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5"/>
-                                    </svg>
-                                @elseif($i == 7)
-                                    <!-- emoji poco serio -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-emoji-grimace" viewBox="0 0 16 16">
-                                        <path d="M7 6.25c0 .69-.448 1.25-1 1.25s-1-.56-1-1.25S5.448 5 6 5s1 .56 1 1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m2.98 3.25A1.5 1.5 0 0 1 11.5 12h-7a1.5 1.5 0 0 1-1.48-1.747v-.003A1.5 1.5 0 0 1 4.5 9h7a1.5 1.5 0 0 1 1.48 1.747zm-8.48.75h.25v-.75H3.531a1 1 0 0 0 .969.75m7 0a1 1 0 0 0 .969-.75H11.25v.75zm.969-1.25a1 1 0 0 0-.969-.75h-.25v.75zM4.5 9.5a1 1 0 0 0-.969.75H4.75V9.5zm1.75 2v-.75h-1v.75zm.5 0h1v-.75h-1zm1.5 0h1v-.75h-1zm1.5 0h1v-.75h-1zm1-2h-1v.75h1zm-1.5 0h-1v.75h1zm-1.5 0h-1v.75h1zm-1.5 0h-1v.75h1z"/>
-                                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m0-1A7 7 0 1 1 8 1a7 7 0 0 1 0 14"/>
-                                    </svg>
-                                @elseif($i <= 8)
-                                    <!-- Emoji neutral -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#6bc3ff" class="bi bi-emoji-neutral" viewBox="0 0 16 16">
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                        <path d="M4 10.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5m3-4C7 5.672 6.552 5 6 5s-1 .672-1 1.5S5.448 8 6 8s1-.672 1-1.5m4 0c0-.828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5"/>
-                                    </svg>
-                                @elseif($i == 9)
-                                    <!-- Emoji feliz -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#51d88a" class="bi bi-emoji-smile" viewBox="0 0 16 16">
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                        <path d="M4.285 9.567a.5.5 0 0 1 .683.183A3.5 3.5 0 0 0 8 11.5a3.5 3.5 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683M7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5m4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5"/>
-                                    </svg>
-                                @else
-                                    <!-- emoji enamorado -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-heart-eyes" viewBox="0 0 16 16">
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                        <path d="M11.315 10.014a.5.5 0 0 1 .548.736A4.5 4.5 0 0 1 7.965 13a4.5 4.5 0 0 1-3.898-2.25.5.5 0 0 1 .548-.736h.005l.017.005.067.015.252.055c.215.046.515.108.857.169.693.124 1.522.242 2.152.242s1.46-.118 2.152-.242a27 27 0 0 0 1.109-.224l.067-.015.017-.004.005-.002zM4.756 4.566c.763-1.424 4.02-.12.952 3.434-4.496-1.596-2.35-4.298-.952-3.434m6.488 0c1.398-.864 3.544 1.838-.952 3.434-3.067-3.554.19-4.858.952-3.434"/>
-                                    </svg>
-                                @endif
+            @if(isset($model))    
+            <form method="POST" action="/metadata/{{$model->id}}/store/nps" class="radio-tile-group">
+                {{ csrf_field() }}
+
+                <div class="radio-tiles-wrapper">
+                    @for($i = 1; $i <= 10; $i++)
+                        <div class="input-container">
+                            <input id="option{{$i}}" class="radio-button" type="radio" name="nps" value="{{$i}}">
+                            <div class="radio-tile" data-value="{{$i}}">
+                                <div class="icon @if($i <= 6) icon-bg-red @elseif($i <= 8) icon-bg-blue @else icon-bg-green @endif">
+                                    @if($i >0 && $i <= 2)
+                                        <!-- emoji enojado -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-emoji-angry" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                            <path d="M4.285 12.433a.5.5 0 0 0 .683-.183A3.5 3.5 0 0 1 8 10.5c1.295 0 2.426.703 3.032 1.75a.5.5 0 0 0 .866-.5A4.5 4.5 0 0 0 8 9.5a4.5 4.5 0 0 0-3.898 2.25.5.5 0 0 0 .183.683m6.991-8.38a.5.5 0 1 1 .448.894l-1.009.504c.176.27.285.64.285 1.049 0 .828-.448 1.5-1 1.5s-1-.672-1-1.5c0-.247.04-.48.11-.686a.502.502 0 0 1 .166-.761zm-6.552 0a.5.5 0 0 0-.448.894l1.009.504A1.94 1.94 0 0 0 5 6.5C5 7.328 5.448 8 6 8s1-.672 1-1.5c0-.247-.04-.48-.11-.686a.502.502 0 0 0-.166-.761z"/>
+                                        </svg>
+                                    @elseif($i > 2 && $i <= 4)
+                                        <!-- emoji super triste -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-emoji-tear" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                            <path d="M6.831 11.43A3.1 3.1 0 0 1 8 11.196c.916 0 1.607.408 2.25.826.212.138.424-.069.282-.277-.564-.83-1.558-2.049-2.532-2.049-.53 0-1.066.361-1.536.824q.126.27.232.535.069.174.135.373ZM6 11.333C6 12.253 5.328 13 4.5 13S3 12.254 3 11.333c0-.706.882-2.29 1.294-2.99a.238.238 0 0 1 .412 0c.412.7 1.294 2.284 1.294 2.99M7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5m4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5m-1.5-3A.5.5 0 0 1 10 3c1.162 0 2.35.584 2.947 1.776a.5.5 0 1 1-.894.448C11.649 4.416 10.838 4 10 4a.5.5 0 0 1-.5-.5M7 3.5a.5.5 0 0 0-.5-.5c-1.162 0-2.35.584-2.947 1.776a.5.5 0 1 0 .894.448C4.851 4.416 5.662 4 6.5 4a.5.5 0 0 0 .5-.5"/>
+                                        </svg>
+                                    @elseif($i > 4 && $i <= 6)
+                                        <!-- Emoji triste -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#ff6b6b" class="bi bi-emoji-frown" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                            <path d="M4.285 12.433a.5.5 0 0 0 .683-.183A3.5 3.5 0 0 1 8 10.5c1.295 0 2.426.703 3.032 1.75a.5.5 0 0 0 .866-.5A4.5 4.5 0 0 0 8 9.5a4.5 4.5 0 0 0-3.898 2.25.5.5 0 0 0 .183.683M7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5m4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5"/>
+                                        </svg>
+                                    @elseif($i == 7)
+                                        <!-- emoji poco serio -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-emoji-grimace" viewBox="0 0 16 16">
+                                            <path d="M7 6.25c0 .69-.448 1.25-1 1.25s-1-.56-1-1.25S5.448 5 6 5s1 .56 1 1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m2.98 3.25A1.5 1.5 0 0 1 11.5 12h-7a1.5 1.5 0 0 1-1.48-1.747v-.003A1.5 1.5 0 0 1 4.5 9h7a1.5 1.5 0 0 1 1.48 1.747zm-8.48.75h.25v-.75H3.531a1 1 0 0 0 .969.75m7 0a1 1 0 0 0 .969-.75H11.25v.75zm.969-1.25a1 1 0 0 0-.969-.75h-.25v.75zM4.5 9.5a1 1 0 0 0-.969.75H4.75V9.5zm1.75 2v-.75h-1v.75zm.5 0h1v-.75h-1zm1.5 0h1v-.75h-1zm1.5 0h1v-.75h-1zm1-2h-1v.75h1zm-1.5 0h-1v.75h1zm-1.5 0h-1v.75h1zm-1.5 0h-1v.75h1z"/>
+                                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m0-1A7 7 0 1 1 8 1a7 7 0 0 1 0 14"/>
+                                        </svg>
+                                    @elseif($i <= 8)
+                                        <!-- Emoji neutral -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#6bc3ff" class="bi bi-emoji-neutral" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                            <path d="M4 10.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5m3-4C7 5.672 6.552 5 6 5s-1 .672-1 1.5S5.448 8 6 8s1-.672 1-1.5m4 0c0-.828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5"/>
+                                        </svg>
+                                    @elseif($i == 9)
+                                        <!-- Emoji feliz -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="#51d88a" class="bi bi-emoji-smile" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                            <path d="M4.285 9.567a.5.5 0 0 1 .683.183A3.5 3.5 0 0 0 8 11.5a3.5 3.5 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683M7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5m4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5"/>
+                                        </svg>
+                                    @else
+                                        <!-- emoji enamorado -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-heart-eyes" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                            <path d="M11.315 10.014a.5.5 0 0 1 .548.736A4.5 4.5 0 0 1 7.965 13a4.5 4.5 0 0 1-3.898-2.25.5.5 0 0 1 .548-.736h.005l.017.005.067.015.252.055c.215.046.515.108.857.169.693.124 1.522.242 2.152.242s1.46-.118 2.152-.242a27 27 0 0 0 1.109-.224l.067-.015.017-.004.005-.002zM4.756 4.566c.763-1.424 4.02-.12.952 3.434-4.496-1.596-2.35-4.298-.952-3.434m6.488 0c1.398-.864 3.544 1.838-.952 3.434-3.067-3.554.19-4.858.952-3.434"/>
+                                        </svg>
+                                    @endif
+                                </div>
                             </div>
+                            <label for="option{{$i}}" class="radio-tile-label">{{$i}}</label>
                         </div>
-                        <label for="option{{$i}}" class="radio-tile-label">{{$i}}</label>
+                    @endfor
+                </div>
+
+                {{-- NUEVO BLOQUE: textarea y botón --}}
+                <div class="why-container">
+                    <h3>Queremos saber qué te hizo elegirnos y qué piensas de nosotros</h3><br>
+                    <div class="content">
+                        <div class="text-container">
+                            <span>
+                                {{$model->name}} gracias por ayudarnos a mejorar. Esta breve encuesta nos permitirá conocer tu opinión y mejorar nuestra calidad de servicio. Tu experiencia nos importa. Saber tu opinión nos ayuda a mejorar y seguir ofreciéndote el servicio que mereces.
+                            </span>
+                        </div>
+                        <div class="text-area">
+                            <label for="opinion">Déjanos tu opinión:</label>
+                            <textarea name="opinion" id="opinion"></textarea>
+                        </div>
                     </div>
-                @endfor
-            </div>
-            <div class="submit-btn-wrapper">
-                <button type="submit" class="submit-btn">Guardar</button>
-            </div>
-        </form>
-        @else
-            <p>El número no fue encontrado en la base de datos.</p>
-        @endif
+                </div>
+
+                {{-- BOTÓN FINAL ÚNICO --}}
+                <div class="submit-btn-wrapper">
+                    <button type="submit" class="submit-btn">Enviar</button>
+                </div>
+            </form>
+            @else
+                <p>El número no fue encontrado en la base de datos.</p>
+            @endif
         </div>
-    
-    </div>
-    
-    
-    <div class="logo-container"></div>
-    <div class="span">
-        <span>{{$model->name}} gracias por ayudarnos a mejorar. Esta breve encuesta nos permitirá conocer tu opinión y mejorar nuestra calidad de servicio.</span>
-    </div>
-</div>
+    </div>  
 
 <style>
     * {
         box-sizing: border-box;
         font-family: 'Helvetica Neue', sans-serif;
+    }
+    .text-area{
+        width: 40%;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        & button{
+            padding: 5px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: black;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+        }
+    }
+    .text-area textarea {
+        width: 70%;
+        height: 100px; 
+        resize: vertical; 
+        padding: 10px; 
+        font-size: 14px; 
+    }
+
+    .text-container{
+        width: 55%;
+        height: auto;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+    .content{
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: flex-start;
+        justify-content: center;
     }
     .all-content{
         width: 100%;
@@ -99,7 +150,7 @@
         align-items: center;
         justify-content: center;
     }
-    .span{
+    /* .span{
         margin-top: 20px;
         width: 100%;
         height: 40px;
@@ -108,6 +159,17 @@
         align-items: center;
         justify-content: center;
         text-align: center;
+    } */
+    .why-container{
+        width: 100%;
+        height: max-content;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 30px;  
     }
     .icon-bg-red {
         display: flex;
@@ -272,17 +334,20 @@
     }
 
     .submit-btn {
-        padding: 5px 20px;
+        padding: 5px 30px;
         border: none;
-        border-radius: 5px;
+        border-radius: 8px;
         background-color: black;
         color: white;
-        font-size: 10px;
+        font-size: 16px;
+        font-weight: bold;
         cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2
     }
 
     .submit-btn:hover {
         background-color: #333;
+        transform: scale(1.05);
     }
 
     .mensaje {
