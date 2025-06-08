@@ -35,6 +35,7 @@ use App\Http\Controllers\LandingController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     return view('home');
@@ -454,3 +455,4 @@ Route::get('/sync-dashboard', [App\Http\Controllers\ProductSyncController::class
 Route::get('/fake-json', function() {
     return Storage::download('productos_fake.json');
 });
+
