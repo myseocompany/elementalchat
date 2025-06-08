@@ -448,3 +448,9 @@ Route::post('/metadata/{id}/store/nps', [MetaDataController::class, 'storeNPS'])
 
 Route::get('/nps/thanks')->name('nps.thanks');
 Route::get('/sync-dashboard', [App\Http\Controllers\ProductSyncController::class, 'dashboard']);
+
+
+// En routes/web.php solo para pruebas:
+Route::get('/fake-json', function() {
+    return Storage::download('productos_fake.json');
+});
