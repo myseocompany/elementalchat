@@ -447,3 +447,4 @@ Route::get('/nps/{phone}', [MetaDataController::class, 'findNPS']);
 Route::post('/metadata/{id}/store/nps', [MetaDataController::class, 'storeNPS']);
 
 Route::get('/nps/thanks')->name('nps.thanks');
+Route::get('/sync-dashboard', [App\Http\Controllers\ProductSyncController::class, 'dashboard']);
