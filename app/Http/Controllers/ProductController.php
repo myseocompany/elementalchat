@@ -21,6 +21,7 @@ class ProductController extends Controller
             $request->type_id == 1;
 
         $model = $this->getModel($request);
+        
         //$group = $this->groupModel($request);
         $statuses = ProductStatus::all();
         $types = ProductType::where(function ($query) use ($request) {
@@ -61,6 +62,7 @@ class ProductController extends Controller
     {
         $model = Product::where(function ($query) use ($request) {
             $query->where("status_id", 1);
+            /*
             if (isset($request->from_date) && ($request->from_date != null)) {
                 $query->whereBetween('products.updated_at', [$request->from_date, $request->to_date . " 23:59:59"]);
             }
@@ -83,9 +85,12 @@ class ProductController extends Controller
                     $query->where('type_id', $request->type_id);
                 }
             }
+                */
+                
             if (isset($request->keyword) && ($request->keyword != null)) {
                 $query->where(function ($innerQuery) use ($request) {
                     $innerQuery->orwhere('products.name', "like", "%$request->keyword%");
+                    dd($request->keyword);
                 });
             }
 
