@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\MekanoProduct as Product;
+use App\Models\Product as Product;
 use App\Models\ProductSnapshot;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
