@@ -3,10 +3,12 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Product;
+use App\Models\MekanoProduct as Product;
 use App\Models\ProductSnapshot;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+
 
 class SyncProductsFromMekano extends Command
 {
@@ -15,14 +17,20 @@ class SyncProductsFromMekano extends Command
 
     public function handle()
     {
+        if ($this->hasMutex()) {
+            $this->info('Ya se está ejecutando otro proceso, se salta.');
+            return 0;
+        }
         $this->info('Conectando a Mekano...');
 
         $response = Http::get('https://n8n-1-85-1.onrender.com/webhook/cf2ffb57-8608-42d8-82cd-97d3ae8a3a6a');
 
-        if ($response->failed()) {
+        if (!$response->successful()) {
+            Log::error('Sync Mekano falló. Código: '.$response->status());
             $this->error('Error conectando con Mekano.');
             return 1;
         }
+
 
         $productos = $response->json('data');
 
@@ -69,5 +77,28 @@ class SyncProductsFromMekano extends Command
         }
 
         $this->info('Sincronización completada.');
+
+        Log::info('Sync Mekano ejecutado correctamente a las ' . now());
+
+    }
+
+    protected function hasMutex()
+    {
+        return cache()->has('sync-products-running');
+    }
+
+    protected function setMutex()
+    {
+        cache()->put('sync-products-running', true, 600); // 10 minutos
+    }
+
+    protected function clearMutex()
+    {
+        cache()->forget('sync-products-running');
+    }
+
+    public function __destruct()
+    {
+        $this->clearMutex();
     }
 }
