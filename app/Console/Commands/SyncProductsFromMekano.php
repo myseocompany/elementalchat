@@ -8,13 +8,15 @@ use App\Models\ProductSnapshot;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Services\WooCommerceService;
+
 
 class SyncProductsFromMekano extends Command
 {
     protected $signature = 'mekano:sync-products';
     protected $description = 'Sincroniza productos desde el ERP Mekano, guarda snapshot y actualiza inventario.';
 
-    public function handle()
+    public function handle(WooCommerceService $woo)
     {
         if ($this->hasMutex()) {
             $this->info('Ya se está ejecutando otro proceso, se salta.');
@@ -36,6 +38,9 @@ class SyncProductsFromMekano extends Command
             $this->saveSnapshot($productos);
             $this->syncInventory($productos);
 
+            // 👉 Aquí haces la sincronización con WooCommerce
+            $this->syncWooCommerce($productos, $woo);
+
             $this->info('Sincronización completada.');
             Log::info('Sync Mekano ejecutado correctamente a las ' . now());
         } catch (\Exception $e) {
@@ -47,7 +52,8 @@ class SyncProductsFromMekano extends Command
         }
 
         return 0;
-    }
+}
+
     private function fetchProducts()
     {
         $this->info('Conectando a Mekano...');
@@ -119,6 +125,8 @@ class SyncProductsFromMekano extends Command
                 ]);
             }
         }
+      
+
     }
 
     private function hasMutex()
@@ -135,4 +143,105 @@ class SyncProductsFromMekano extends Command
     {
         cache()->forget('sync-products-running');
     }
+private function syncWooCommerce(array $productos, $wooService)
+{
+    $this->info('Sincronizando productos con WooCommerce...');
+
+    // Paso 1: Descargar todos los productos existentes
+    $this->info('Descargando productos desde WooCommerce...');
+    $wooProducts = [];
+    $page = 1;
+
+    do {
+        $response = $wooService->getClient()->get('products', [
+            'per_page' => 100,
+            'page' => $page,
+            'status' => 'any' // incluye draft y publish
+        ]);
+
+        foreach ($response as $item) {
+            if ($item->sku) {
+                $wooProducts[$item->sku] = $item;
+            }
+        }
+
+        $hasMore = count($response) === 100;
+        $page++;
+    } while ($hasMore);
+
+    $mekanoSkus = [];
+
+    // Paso 2: Recorrer productos de Mekano
+    foreach ($productos as $producto) {
+        $ref = $producto['REFERENCIA'];
+        $name = $producto['NOMBRE_REFERENCIA'];
+        $price = (string) $producto['PRECIO'];
+        $quantity = (int) $producto['SALDO'];
+
+        if (stripos($name, 'magis') !== false) {
+            $this->line("⏭ Magistral omitido: $ref ($name)");
+            continue;
+        }
+
+        $mekanoSkus[] = $ref;
+
+        if (isset($wooProducts[$ref])) {
+            $wooProduct = $wooProducts[$ref];
+            $currentPrice = (string) $wooProduct->regular_price;
+            $currentStock = (int) $wooProduct->stock_quantity;
+            $currentStatus = $wooProduct->status;
+            $newStatus = $quantity > 0 ? 'publish' : 'draft';
+
+            if (
+                $price !== $currentPrice ||
+                $quantity !== $currentStock ||
+                $newStatus !== $currentStatus
+            ) {
+                $wooService->updateProduct($wooProduct->id, [
+                    'name' => $name,
+                    'regular_price' => $price,
+                    'stock_quantity' => $quantity,
+                    'manage_stock' => true,
+                    'status' => $newStatus,
+                ]);
+                $this->line("🔄 Actualizado Woo: $ref");
+            } else {
+                $this->line("✅ Sin cambios: $ref");
+            }
+        } else {
+            if ($quantity > 0) {
+                $wooService->createProduct([
+                    'name' => $name,
+                    'type' => 'simple',
+                    'regular_price' => $price,
+                    'sku' => $ref,
+                    'stock_quantity' => $quantity,
+                    'manage_stock' => true,
+                    'status' => 'publish',
+                ]);
+                $this->line("🆕 Creado en Woo: $ref");
+            } else {
+                $this->line("⏭ Sin stock y no existe en Woo: $ref (no se crea)");
+            }
+        }
+    }
+
+    // Paso 3: Despublicar productos que ya no están en Mekano
+    $this->info('Despublicando productos huérfanos...');
+    foreach ($wooProducts as $sku => $wooProduct) {
+        if (!in_array($sku, $mekanoSkus)) {
+            if ($wooProduct->status !== 'draft') {
+                try {
+                    $wooService->updateProduct($wooProduct->id, [
+                        'status' => 'draft',
+                    ]);
+                    $this->line("🗑 Despublicado huérfano: $sku");
+                } catch (\Exception $e) {
+                    $this->error("❌ Error al despublicar $sku: " . $e->getMessage());
+                }
+            }
+        }
+    }
+}
+
 }
