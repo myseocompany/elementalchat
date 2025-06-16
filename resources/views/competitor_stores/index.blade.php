@@ -101,7 +101,7 @@
         if(store.latitude && store.longitude){
             var brand = getBrand(store);
 
-            var color = getColor(brand);
+            var color = getColor(store);
 
             var icon = L.divIcon({
                 className: 'custom-div-icon',
