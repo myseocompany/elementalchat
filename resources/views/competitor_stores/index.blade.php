@@ -5,6 +5,19 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+    .brand-pin {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        color: #fff;
+        text-align: center;
+        line-height: 30px;
+        font-size: 14px;
+    }
+</style>
 
 <div id="map" style="width: 100%; height: 500px;" class="mb-4"></div>
 
@@ -19,6 +32,7 @@
             @endforeach
         </div>
         <button type="submit" class="btn btn-primary">Filtrar</button>
+        <button type="button" id="download-map" class="btn btn-secondary ml-2">Descargar mapa</button>
     </form>
 </div>
 
@@ -59,12 +73,56 @@
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
+
+    var brandColors = {
+        'Falabella': '#4CAF50',
+        'Farmatodo': '#0A6AB4',
+        'Kumalinda': '#FF5722',
+        'Linda': '#E91E63',
+        'Linea': '#3F51B5',
+        'Medipiel': '#009688',
+        'Naturell': '#8BC34A',
+        'Para': '#FFC107',
+        'Profamiliar': '#9C27B0',
+        'Skin': '#FF9800',
+        'Cruz': '#795548'
+    };
+
+    function getBrand(store) {
+        if (store.franchise && store.franchise.name) {
+            return store.franchise.name;
+        }
+        return store.name.split(' ')[0];
+    }
+
+    function getColor(brand) {
+        return brandColors[brand] || '#3388ff';
+    }
+
     var stores = @json($model);
     stores.forEach(function(store){
         if(store.latitude && store.longitude){
-            L.marker([store.latitude, store.longitude]).addTo(map)
+            var brand = getBrand(store);
+            var color = getColor(brand);
+            var icon = L.divIcon({
+                className: 'custom-div-icon',
+                html: '<div class="brand-pin" style="background:' + color + ';">' + brand.charAt(0) + '</div>',
+                iconSize: [30, 42],
+                iconAnchor: [15, 42]
+            });
+
+            L.marker([store.latitude, store.longitude], {icon: icon}).addTo(map)
                 .bindPopup('<b>'+store.name+'</b><br>'+ (store.address || ''));
         }
+    });
+
+    document.getElementById('download-map').addEventListener('click', function(){
+        html2canvas(document.getElementById('map')).then(function(canvas){
+            var link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = 'mapa.png';
+            link.click();
+        });
     });
 </script>
 @endsection
