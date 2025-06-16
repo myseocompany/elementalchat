@@ -94,7 +94,7 @@
             return store.franchise.color;
         }
         return '#3388ff';
-
+    }
 
     var stores = @json($model);
     stores.forEach(function(store){
