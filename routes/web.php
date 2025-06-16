@@ -33,6 +33,7 @@ use App\Http\Controllers\CustomerUnsubscribesController;
 use App\Http\Controllers\BIController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\CompetitorStoreController;
+use App\Http\Controllers\FranchiseController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
@@ -459,6 +460,15 @@ Route::middleware('auth')->prefix('competitor-stores')->group(function () {
     Route::get('/{store}/edit', [CompetitorStoreController::class, 'edit']);
     Route::post('/{store}/update', [CompetitorStoreController::class, 'update']);
     Route::get('/{store}/destroy', [CompetitorStoreController::class, 'destroy']);
+});
+
+Route::middleware('auth')->prefix('franchises')->group(function () {
+    Route::get('/', [FranchiseController::class, 'index'])->name('franchises');
+    Route::get('/create', [FranchiseController::class, 'create']);
+    Route::post('/', [FranchiseController::class, 'store']);
+    Route::get('/{franchise}/edit', [FranchiseController::class, 'edit']);
+    Route::post('/{franchise}/update', [FranchiseController::class, 'update']);
+    Route::get('/{franchise}/destroy', [FranchiseController::class, 'destroy']);
 });
 
 
