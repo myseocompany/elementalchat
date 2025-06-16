@@ -10,16 +10,23 @@ class CompetitorStoreController extends Controller
 {
     public function index(Request $request)
     {
+        $years = CompetitorStore::select('opened_year')
+            ->distinct()
+            ->orderBy('opened_year', 'desc')
+            ->pluck('opened_year');
+
         $model = CompetitorStore::with('franchise')
-            ->where(function($q) use ($request){
-                if(isset($request->year))
-                    $q->where('opened_year', $request->year);
+            ->when($request->input('years'), function ($q) use ($request) {
+                $q->whereIn('opened_year', (array) $request->input('years'));
             })
             ->orderBy('opened_year', 'desc')
             ->get();
 
-        $years = CompetitorStore::select('opened_year')->distinct()->orderBy('opened_year', 'desc')->pluck('opened_year');
-        return view('competitor_stores.index', compact('model','years','request'));
+        return view('competitor_stores.index', [
+            'model' => $model,
+            'years' => $years,
+            'request' => $request
+        ]);
     }
 
     public function create()

@@ -2,18 +2,26 @@
 
 @section('content')
 <h1>Tiendas de la competencia</h1>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+<div id="map" style="width: 100%; height: 500px;" class="mb-4"></div>
+
 <div class="mb-3">
     <form method="GET" action="/competitor-stores" class="form-inline">
-        <label>Año:</label>
-        <select name="year" class="form-control mx-2">
-            <option value="">Todos</option>
+        <label class="mr-2">Años:</label>
+        <div class="form-group mr-3">
             @foreach($years as $y)
-            <option value="{{$y}}" @if(isset($request->year) && $request->year==$y) selected @endif>{{$y}}</option>
+                <label class="mr-2">
+                    <input type="checkbox" name="years[]" value="{{$y}}" @if(is_array(request('years')) && in_array($y, request('years'))) checked @endif> {{$y}}
+                </label>
             @endforeach
-        </select>
+        </div>
         <button type="submit" class="btn btn-primary">Filtrar</button>
     </form>
 </div>
+
 <a href="/competitor-stores/create">Crear tienda</a>
 <table class="table">
     <thead>
@@ -45,9 +53,6 @@
     </tbody>
 </table>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-<div id="map" style="width: 100%; height: 400px;"></div>
 <script>
     var map = L.map('map').setView([5.0673, -75.4839], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
