@@ -28,7 +28,10 @@
 	<a href="/products" class="list-group-item"> Productos</a>
 </div>
 <div class="list-group">
-	<a href="/product_types" class="list-group-item">Tipos de Productos</a>
+        <a href="/product_types" class="list-group-item">Tipos de Productos</a>
+</div>
+<div class="list-group">
+        <a href="/competitor-stores" class="list-group-item">Tiendas de la competencia</a>
 </div>
 
 
