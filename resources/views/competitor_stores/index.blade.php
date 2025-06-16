@@ -88,18 +88,21 @@
         return store.name.split(' ')[0];
     }
 
+
     function getColor(store) {
         if (store.franchise && store.franchise.color) {
             return store.franchise.color;
         }
         return '#3388ff';
-    }
+
 
     var stores = @json($model);
     stores.forEach(function(store){
         if(store.latitude && store.longitude){
             var brand = getBrand(store);
-            var color = getColor(store);
+
+            var color = getColor(brand);
+
             var icon = L.divIcon({
                 className: 'custom-div-icon',
                 html: '<div class="brand-pin" style="background:' + color + ';">' + brand.charAt(0) + '</div>',
