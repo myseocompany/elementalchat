@@ -32,6 +32,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CustomerUnsubscribesController;
 use App\Http\Controllers\BIController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\CompetitorStoreController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
@@ -449,6 +450,16 @@ Route::post('/metadata/{id}/store/nps', [MetaDataController::class, 'storeNPS'])
 
 Route::get('/nps/thanks')->name('nps.thanks');
 Route::get('/sync-dashboard', [App\Http\Controllers\ProductSyncController::class, 'dashboard']);
+
+
+Route::middleware('auth')->prefix('competitor-stores')->group(function () {
+    Route::get('/', [CompetitorStoreController::class, 'index'])->name('competitor_stores');
+    Route::get('/create', [CompetitorStoreController::class, 'create']);
+    Route::post('/', [CompetitorStoreController::class, 'store']);
+    Route::get('/{store}/edit', [CompetitorStoreController::class, 'edit']);
+    Route::post('/{store}/update', [CompetitorStoreController::class, 'update']);
+    Route::get('/{store}/destroy', [CompetitorStoreController::class, 'destroy']);
+});
 
 
 
