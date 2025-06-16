@@ -25,7 +25,7 @@ class CompetitorStoreController extends Controller
         return view('competitor_stores.index', [
             'model' => $model,
             'years' => $years,
-            'request' => $request
+            'request' => $request,
         ]);
     }
 

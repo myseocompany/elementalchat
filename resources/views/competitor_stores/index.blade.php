@@ -45,6 +45,7 @@
             <th>Latitud</th>
             <th>Longitud</th>
             <th>Franquicia</th>
+            <th>Color</th>
             <th>Año de apertura</th>
             <th>Acciones</th>
         </tr>
@@ -57,6 +58,12 @@
             <td>{{$item->latitude}}</td>
             <td>{{$item->longitude}}</td>
             <td>@if(isset($item->franchise)){{$item->franchise->name}}@endif</td>
+            <td>
+                @if(isset($item->franchise))
+                    <span style="display:inline-block;width:20px;height:20px;background:{{$item->franchise->color}};"></span>
+                    {{$item->franchise->color}}
+                @endif
+            </td>
             <td>{{$item->opened_year}}</td>
             <td>
                 <a href="/competitor-stores/{{$item->id}}/edit">Editar</a>
@@ -74,20 +81,6 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    var brandColors = {
-        'Falabella': '#4CAF50',
-        'Farmatodo': '#0A6AB4',
-        'Kumalinda': '#FF5722',
-        'Linda': '#E91E63',
-        'Linea': '#3F51B5',
-        'Medipiel': '#009688',
-        'Naturell': '#8BC34A',
-        'Para': '#FFC107',
-        'Profamiliar': '#9C27B0',
-        'Skin': '#FF9800',
-        'Cruz': '#795548'
-    };
-
     function getBrand(store) {
         if (store.franchise && store.franchise.name) {
             return store.franchise.name;
@@ -95,15 +88,21 @@
         return store.name.split(' ')[0];
     }
 
-    function getColor(brand) {
-        return brandColors[brand] || '#3388ff';
-    }
+
+    function getColor(store) {
+        if (store.franchise && store.franchise.color) {
+            return store.franchise.color;
+        }
+        return '#3388ff';
+
 
     var stores = @json($model);
     stores.forEach(function(store){
         if(store.latitude && store.longitude){
             var brand = getBrand(store);
+
             var color = getColor(brand);
+
             var icon = L.divIcon({
                 className: 'custom-div-icon',
                 html: '<div class="brand-pin" style="background:' + color + ';">' + brand.charAt(0) + '</div>',
