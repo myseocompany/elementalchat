@@ -32,6 +32,9 @@ class CompetitorStoreController extends Controller
     {
         $model = new CompetitorStore;
         $model->name = $request->name;
+        $model->address = $request->address;
+        $model->latitude = $request->latitude;
+        $model->longitude = $request->longitude;
         $model->franchise_id = $request->franchise_id;
         $model->opened_year = $request->opened_year;
         $model->save();
@@ -49,6 +52,9 @@ class CompetitorStoreController extends Controller
     {
         $model = CompetitorStore::find($id);
         $model->name = $request->name;
+        $model->address = $request->address;
+        $model->latitude = $request->latitude;
+        $model->longitude = $request->longitude;
         $model->franchise_id = $request->franchise_id;
         $model->opened_year = $request->opened_year;
         $model->save();
