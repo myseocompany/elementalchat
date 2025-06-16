@@ -9,6 +9,18 @@
         <input type="text" name="name" class="form-control" required>
     </div>
     <div class="form-group">
+        <label>Dirección:</label>
+        <input type="text" name="address" class="form-control">
+    </div>
+    <div class="form-group">
+        <label>Latitud:</label>
+        <input type="text" name="latitude" class="form-control">
+    </div>
+    <div class="form-group">
+        <label>Longitud:</label>
+        <input type="text" name="longitude" class="form-control">
+    </div>
+    <div class="form-group">
         <label>Franquicia:</label>
         <select name="franchise_id" class="form-control">
             <option value="">-- Ninguna --</option>

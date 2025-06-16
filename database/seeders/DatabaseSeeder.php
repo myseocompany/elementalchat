@@ -89,13 +89,15 @@ class DatabaseSeeder extends Seeder
                 'settings' => json_encode([
                     'webhook_url' => 'https://api.watoolbox.com/webhooks/YCSKQA0CJ',
                     'phone_number' => '573148358924',
-                    
+
                 ]),
                 'APIKEY' => 'fL2@£H@knd13b9JSBN;H\b;#bBz_67FQX*f^0bEKAF.n7-QfPp%',
-                
-                
+
+
             ]
         ]);
+
+        $this->call(CompetitorStoreSeeder::class);
     }
 
 }
