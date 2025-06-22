@@ -1,24 +1,81 @@
 [
   {
+    "Tienda": "Skin Life Centro Comercial Sancancio",
+    "Dirección": "C.C Sancancio, Carrera 27 A 66-30, Local 850",
+    "Latitud": 5.0622,
+    "Longitud": -75.4922,
+        "Año apertura": 2021
+  },
+  {
+    "Tienda": "Skin Life Palermo",
+    "Dirección": "Cl. 66 #No 27 A 08",
+    "Latitud": 5.0624,
+    "Longitud": -75.4912,
+        "Año apertura": 2021
+  },
+      {
+    "Tienda": "Linda Piel - Cableplaza",
+    "Dirección": "Carrera 23 # 65-11 CC Cable Plaza Loc 122B",
+    "Latitud": 5.0679,
+    "Longitud": -75.4837,
+        "Año apertura": 2021
+  },
+  {
+    "Tienda": "Linda Piel - Milan",
+    "Dirección": "Cr 23 No: 71-117",
+    "Latitud": 5.0694,
+    "Longitud": -75.4862,
+        "Año apertura": 2021
+  },
+  {
+    "Tienda": "Para tu piel - Estrella",
+    "Dirección": "Parque Estrella, Cl. 61a #24B-21",
+    "Latitud": 5.0655,
+    "Longitud": -75.4965,
+        "Año apertura": 2021
+  },
+  {
+    "Tienda": "Medipiel - Mall Plaza",
+    "Dirección": "Av. Kevin Ángel #55D – 251 Local 1072A",
+    "Latitud": 5.0592,
+    "Longitud": -75.4879,
+        "Año apertura": 2021
+  },
+    {
+    "Tienda": "Medipiel - Fundadores",
+    "Dirección": "Cl. 33b #20 -03 Local 262",
+    "Latitud": 5.0617,
+    "Longitud": -75.4984,
+        "Año apertura": 2022
+  },
+  
+  {
     "Tienda": "Falabella",
     "Dirección": "Cra. 14 #56d-1",
     "Latitud": 4.9654,
     "Longitud": -75.5097,
         "Año apertura": 2022
   },
-  {
-    "Tienda": "Farmatodo",
-    "Dirección": "Av. Santander #62-96",
-    "Latitud": 5.0673,
-    "Longitud": -75.4839,
+    {
+    "Tienda": "Profamiliar",
+    "Dirección": "Carrera 22, Av. Del Centro #25-03",
+    "Latitud": 5.066,
+    "Longitud": -75.5005,
         "Año apertura": 2022
   },
   {
     "Tienda": "Farmatodo La Florida",
+    "Dirección": "Calle 71 # 1-19 Villamaria local 09",
+    "Latitud": 5.0673,
+    "Longitud": -75.4839,
+        "Año apertura": 2024
+  },
+  {
+    "Tienda": "Farmatodo Av Santander",
     "Dirección": "Av. Santander #62-96",
     "Latitud": 5.0673,
     "Longitud": -75.4839,
-        "Año apertura": 2022
+        "Año apertura": 2025
   },
   {
     "Tienda": "Kuma - Cableplaza",
@@ -27,83 +84,41 @@
     "Longitud": -75.4837,
         "Año apertura": 2022
   },
-    {
-    "Tienda": "Linda Piel - Cableplaza",
-    "Dirección": "Carrera 23 # 65-11 CC Cable Plaza Loc 122B",
-    "Latitud": 5.0679,
-    "Longitud": -75.4837,
-        "Año apertura": 2022
-  },
-  {
-    "Tienda": "Linda Piel - Milan",
-    "Dirección": "Cr 23 No: 71-117",
-    "Latitud": 5.0694,
-    "Longitud": -75.4862,
-        "Año apertura": 2022
-  },
+
   {
     "Tienda": "Linea Estetica Fundadores",
     "Dirección": "Calle 33 B.º 20 03",
     "Latitud": 5.064,
     "Longitud": -75.4975,
-        "Año apertura": 2022
+        "Año apertura": 2024
   },
   {
     "Tienda": "Linea Estetica Mall Plaza",
     "Dirección": "Carrera 14, C.C. Mallplaza Manizales, Av. Kevin Ángel #55D – 251 Local 2145",
     "Latitud": 5.0592,
     "Longitud": -75.4879,
-        "Año apertura": 2022
+        "Año apertura": 2024
   },
+
+
   {
-    "Tienda": "Medipiel - Fundadores",
-    "Dirección": "Cl. 33b #20 -03 Local 262",
-    "Latitud": 5.0617,
-    "Longitud": -75.4984,
-        "Año apertura": 2022
+    "Tienda": "One Center - Las Palmas",
+    "Dirección": "Calle 58 # 24 - 41 170004 Manizales, Colombia",
+    "Latitud": 5.0638,
+    "Longitud": -75.4809,
+        "Año apertura": 2023
   },
+
+
   {
-    "Tienda": "Medipiel - Mall Plaza",
-    "Dirección": "Av. Kevin Ángel #55D – 251 Local 1072A",
-    "Latitud": 5.0592,
-    "Longitud": -75.4879,
-        "Año apertura": 2022
-  },
-  {
-    "Tienda": "Naturell Misukone Center - Las Palmas",
+    "Tienda": "Naturell Misuk",
     "Dirección": "Edificio Los Rosales, Av. Santander #57 - 03 local 201",
     "Latitud": 5.0638,
     "Longitud": -75.4809,
         "Año apertura": 2022
   },
-  {
-    "Tienda": "Para tu piel - Estrella",
-    "Dirección": "Parque Estrella, Cl. 61a #24B-21",
-    "Latitud": 5.0655,
-    "Longitud": -75.4965,
-        "Año apertura": 2022
-  },
-  {
-    "Tienda": "Profamiliar",
-    "Dirección": "Carrera 22, Av. Del Centro #25-03",
-    "Latitud": 5.066,
-    "Longitud": -75.5005,
-        "Año apertura": 2022
-  },
-  {
-    "Tienda": "Skin Life Centro Comercial Sancancio",
-    "Dirección": "C.C Sancancio, Carrera 27 A 66-30, Local 850",
-    "Latitud": 5.0622,
-    "Longitud": -75.4922,
-        "Año apertura": 2022
-  },
-  {
-    "Tienda": "Skin Life Palermo",
-    "Dirección": "Cl. 66 #No 27 A 08",
-    "Latitud": 5.0624,
-    "Longitud": -75.4912,
-        "Año apertura": 2022
-  },
+
+
   {
     "Tienda": "Cruz Verde",
     "Dirección": "Av. Santander #60-2",

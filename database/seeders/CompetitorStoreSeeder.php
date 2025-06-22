@@ -26,6 +26,7 @@ class CompetitorStoreSeeder extends Seeder
             'SkinLife' => 'SkinLife',
             'Cruz Verde' => 'Cruz Verde',
             'Kuma' => 'Kuma',
+            'One Center' => 'One Center',
         ];
 
         foreach ($data as $item) {
