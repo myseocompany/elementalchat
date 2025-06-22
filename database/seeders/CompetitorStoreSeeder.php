@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\CompetitorStore;
+use App\Models\Franchise;
 
 class CompetitorStoreSeeder extends Seeder
 {
@@ -11,13 +12,35 @@ class CompetitorStoreSeeder extends Seeder
     {
         $path = base_path('database/data/competitor_stores.json');
         $data = json_decode(file_get_contents($path), true);
+
+        $franchiseMap = [
+            'Falabella' => 'Falabella',
+            'Farmatodo' => 'Farmatodo',
+            'Linda Piel' => 'Linda Piel',
+            'Linea Estetica' => 'Linea Estetica',
+            'Medipiel' => 'Medipiel',
+            'Naturell' => 'Naturell',
+            'Para tu piel' => 'Para tu piel',
+            'Profamiliar' => 'Profamiliar',
+            'SkinLife' => 'SkinLife',
+            'Cruz Verde' => 'Cruz Verde',
+            'Kuma' => 'Kuma',
+        ];
+
         foreach ($data as $item) {
             if (is_numeric($item['Latitud']) && is_numeric($item['Longitud'])) {
+                $franchiseName = collect($franchiseMap)
+                    ->filter(fn($val, $key) => str_contains(strtolower($item['Tienda']), strtolower($key)))
+                    ->first();
+
+                $franchiseId = Franchise::where('name', $franchiseName)->value('id');
+
                 CompetitorStore::create([
                     'name' => $item['Tienda'],
                     'address' => $item['Dirección'],
                     'latitude' => $item['Latitud'],
                     'longitude' => $item['Longitud'],
+                    'franchise_id' => $franchiseId,
                 ]);
             }
         }
