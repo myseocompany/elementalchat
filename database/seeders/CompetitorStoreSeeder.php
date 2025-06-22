@@ -22,6 +22,7 @@ class CompetitorStoreSeeder extends Seeder
             'Naturell' => 'Naturell',
             'Para tu piel' => 'Para tu piel',
             'Profamiliar' => 'Profamiliar',
+            'Skin Life' => 'SkinLife',
             'SkinLife' => 'SkinLife',
             'Cruz Verde' => 'Cruz Verde',
             'Kuma' => 'Kuma',
@@ -41,6 +42,9 @@ class CompetitorStoreSeeder extends Seeder
                     'latitude' => $item['Latitud'],
                     'longitude' => $item['Longitud'],
                     'franchise_id' => $franchiseId,
+                    'opened_year' => $item['Año apertura'] ?? null,
+                    'created_at' => '2022-06-01 12:00:00',
+                    'updated_at' => '2022-06-01 12:00:00',
                 ]);
             }
         }
