@@ -14,12 +14,17 @@
     </div>
     <div class="form-group">
         <label>Latitud:</label>
-        <input type="text" name="latitude" class="form-control" value="{{$model->latitude}}">
+        <input id="latitude" type="text" name="latitude" class="form-control" value="{{$model->latitude}}">
     </div>
     <div class="form-group">
         <label>Longitud:</label>
-        <input type="text" name="longitude" class="form-control" value="{{$model->longitude}}">
+        <input id="longitude" type="text" name="longitude" class="form-control" value="{{$model->longitude}}">
     </div>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <style>
+        #map { width: 100%; height: 300px; }
+    </style>
+    <div id="map" class="mb-3"></div>
     <div class="form-group">
         <label>Franquicia:</label>
         <select name="franchise_id" class="form-control">
@@ -35,4 +40,32 @@
     </div>
     <button type="submit" class="btn btn-primary">Actualizar</button>
 </form>
+
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script>
+    var latInput = document.getElementById('latitude');
+    var lngInput = document.getElementById('longitude');
+    var lat = parseFloat(latInput.value) || 5.0673;
+    var lng = parseFloat(lngInput.value) || -75.4839;
+
+    var map = L.map('map').setView([lat, lng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var marker = L.marker([lat, lng]).addTo(map);
+
+    function updateMarker() {
+        var lat = parseFloat(latInput.value);
+        var lng = parseFloat(lngInput.value);
+        if (!isNaN(lat) && !isNaN(lng)) {
+            marker.setLatLng([lat, lng]);
+            map.panTo([lat, lng]);
+        }
+    }
+
+    latInput.addEventListener('input', updateMarker);
+    lngInput.addEventListener('input', updateMarker);
+</script>
 @endsection
