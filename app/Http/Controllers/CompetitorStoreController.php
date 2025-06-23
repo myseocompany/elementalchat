@@ -15,9 +15,14 @@ class CompetitorStoreController extends Controller
             ->orderBy('opened_year', 'desc')
             ->pluck('opened_year');
 
+        $franchises = Franchise::all();
+
         $model = CompetitorStore::with('franchise')
             ->when($request->input('years'), function ($q) use ($request) {
                 $q->whereIn('opened_year', (array) $request->input('years'));
+            })
+            ->when($request->input('franchises'), function ($q) use ($request) {
+                $q->whereIn('franchise_id', (array) $request->input('franchises'));
             })
             ->orderBy('opened_year', 'desc')
             ->get();
@@ -25,6 +30,7 @@ class CompetitorStoreController extends Controller
         return view('competitor_stores.index', [
             'model' => $model,
             'years' => $years,
+            'franchises' => $franchises,
             'request' => $request,
         ]);
     }

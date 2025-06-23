@@ -22,12 +22,23 @@
 <div id="map" style="width: 100%; height: 500px;" class="mb-4"></div>
 
 <div class="mb-3">
-    <form method="GET" action="/competitor-stores" class="form-inline">
+    <form id="filter-form" method="GET" action="/competitor-stores" class="form-inline">
         <label class="mr-2">Años:</label>
         <div class="form-group mr-3">
             @foreach($years as $y)
                 <label class="mr-2">
                     <input type="checkbox" name="years[]" value="{{$y}}" @if(is_array(request('years')) && in_array($y, request('years'))) checked @endif> {{$y}}
+                </label>
+            @endforeach
+        </div>
+        <div class="form-group mr-3">
+            <label class="mr-2">Franquicias:</label>
+            @foreach($franchises as $f)
+                @php
+                    $checked = !request('franchises') || in_array($f->id, (array) request('franchises'));
+                @endphp
+                <label class="mr-2">
+                    <input type="checkbox" name="franchises[]" value="{{$f->id}}" @if($checked) checked @endif> {{$f->name}}
                 </label>
             @endforeach
         </div>
@@ -121,6 +132,12 @@
             link.href = canvas.toDataURL('image/png');
             link.download = 'mapa.png';
             link.click();
+        });
+    });
+
+    document.querySelectorAll('input[name="franchises[]"]').forEach(function(cb){
+        cb.addEventListener('change', function(){
+            document.getElementById('filter-form').submit();
         });
     });
 </script>
