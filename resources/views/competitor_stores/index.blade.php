@@ -42,6 +42,17 @@
                 </label>
             @endforeach
         </div>
+        <div class="form-group mr-3">
+            <label class="mr-2">Franquicias:</label>
+            @foreach($franchises as $f)
+                @php
+                    $checked = !request('franchises') || in_array($f->id, (array) request('franchises'));
+                @endphp
+                <label class="mr-2">
+                    <input type="checkbox" name="franchises[]" value="{{$f->id}}" @if($checked) checked @endif> {{$f->name}}
+                </label>
+            @endforeach
+        </div>
         <button type="submit" class="btn btn-primary">Filtrar</button>
         <button type="button" id="download-map" class="btn btn-secondary ml-2">Descargar mapa</button>
     </form>
@@ -89,7 +100,8 @@
     var map = L.map('map').setView([5.0673, -75.4839], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        crossOrigin: true
     }).addTo(map);
 
     function getBrand(store) {
@@ -127,7 +139,7 @@
     });
 
     document.getElementById('download-map').addEventListener('click', function(){
-        html2canvas(document.getElementById('map')).then(function(canvas){
+        html2canvas(document.getElementById('map'), {useCORS: true}).then(function(canvas){
             var link = document.createElement('a');
             link.href = canvas.toDataURL('image/png');
             link.download = 'mapa.png';
