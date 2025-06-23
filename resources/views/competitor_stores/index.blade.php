@@ -27,7 +27,18 @@
         <div class="form-group mr-3">
             @foreach($years as $y)
                 <label class="mr-2">
-                    <input type="checkbox" name="years[]" value="{{$y}}" @if(is_array(request('years')) && in_array($y, request('years'))) checked @endif> {{$y}}
+                    <input type="checkbox" name="years[]" onchange="submit();" value="{{$y}}" @if(is_array(request('years')) && in_array($y, request('years'))) checked @endif> {{$y}}
+                </label>
+            @endforeach
+        </div>
+        <div class="form-group mr-3">
+            <label class="mr-2">Franquicias:</label>
+            @foreach($franchises as $f)
+                @php
+                    $checked = !request('franchises') || in_array($f->id, (array) request('franchises'));
+                @endphp
+                <label class="mr-2">
+                    <input type="checkbox" name="franchises[]" value="{{$f->id}}" @if($checked) checked @endif> {{$f->name}}
                 </label>
             @endforeach
         </div>
