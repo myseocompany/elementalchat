@@ -89,7 +89,8 @@
     var map = L.map('map').setView([5.0673, -75.4839], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        crossOrigin: true
     }).addTo(map);
 
     function getBrand(store) {
@@ -127,7 +128,7 @@
     });
 
     document.getElementById('download-map').addEventListener('click', function(){
-        html2canvas(document.getElementById('map')).then(function(canvas){
+        html2canvas(document.getElementById('map'), {useCORS: true}).then(function(canvas){
             var link = document.createElement('a');
             link.href = canvas.toDataURL('image/png');
             link.download = 'mapa.png';
